@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "180044576683",
+    "project_id": "rivalry-76570",
+    "storage_bucket": "rivalry-76570.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180044576683:android:9d14af167e7e3645b7c4ee",
+        "android_client_info": {
+          "package_name": "com.example.rivalry"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdxmSXxDCDYCfgNYZD5gyiQOWSUBoSov8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

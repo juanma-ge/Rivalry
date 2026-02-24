@@ -1,0 +1,56 @@
+package com.example.rivalry.presentation.auth
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.rivalry.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
+
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email
+
+    private val _contrasenia = MutableStateFlow("")
+    val contrasenia: StateFlow<String> = _contrasenia
+
+    private val _cargando = MutableStateFlow(false)
+    val cargando: StateFlow<Boolean> = _cargando
+
+    private val _mensajeError = MutableStateFlow<String?>(null)
+    val mensajeError: StateFlow<String?> = _mensajeError
+
+    private val _loginExitoso = MutableStateFlow(false)
+    val loginExitoso: StateFlow<Boolean> = _loginExitoso
+
+    fun emailCambiado(nuevoEmail: String){
+        _email.value = nuevoEmail
+    }
+
+    fun contraseniaCambiada(nuevaContrasenia: String){
+        _contrasenia.value = nuevaContrasenia
+    }
+
+    fun login(){
+
+        viewModelScope.launch {
+
+            _cargando.value = true
+            _mensajeError.value = null
+
+            val userId = authRepository.login(_email.value, _contrasenia.value)
+
+            if(userId != null){
+                _loginExitoso.value = true
+            } else {
+                _mensajeError.value = "Error al iniciar sesión. Comprueba de nuevo."
+            }
+
+            _cargando.value = false
+
+        }
+
+    }
+
+}

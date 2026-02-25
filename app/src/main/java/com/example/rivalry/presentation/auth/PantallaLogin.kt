@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +63,9 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
             value = email,
             onValueChange = { viewModel.emailCambiado(it) },
             label = { Text("Correo electrónico")},
-            modifier = Modifier
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -70,8 +75,12 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
             onValueChange = {viewModel.contraseniaCambiada(it)},
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         if (mensajeError != null){
             Spacer(modifier = Modifier.height(8.dp))
@@ -90,7 +99,7 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .size(40.dp)
+                    .width(40.dp)
             ) {
                 Text("Iniciar Sesión", fontSize = 18.sp)
             }
@@ -102,7 +111,7 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .size(20.dp)
+                    .width(10.dp)
             ) {
                 Text("Crear cuenta nueva", fontSize = 18.sp)
             }

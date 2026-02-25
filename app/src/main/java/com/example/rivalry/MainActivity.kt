@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rivalry.data.repository.AuthRepositoryImpl
 import com.example.rivalry.domain.repository.AuthRepository
+import com.example.rivalry.navigation.RivalryNavigation
 import com.example.rivalry.presentation.auth.AuthViewModel
 import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.ui.theme.RivalryTheme
@@ -26,8 +28,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val firebaseAuth = FirebaseAuth.getInstance()
         val authRepository = AuthRepositoryImpl(firebaseAuth)
-        val viewmodel = AuthViewModel(authRepository)
+        val viewModel = AuthViewModel(authRepository)
         setContent {
+            RivalryNavigation(viewModel = viewModel)
         }
     }
 }

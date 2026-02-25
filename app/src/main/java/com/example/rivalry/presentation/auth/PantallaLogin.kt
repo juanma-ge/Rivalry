@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,18 +57,18 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
         Spacer(modifier = Modifier.height(40.dp))
 
         OutlinedTextField(
-            value = correo,
-            onValueChange = { correo = it },
-            label = { text("Correo electrónico")},
+            value = email,
+            onValueChange = { viewModel.emailCambiado(it) },
+            label = { Text("Correo electrónico")},
             modifier = Modifier
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = contra,
-            onValueChange = { contra = it },
-            label = { text("Contraseña") },
+            value = contrasenia,
+            onValueChange = {viewModel.contraseniaCambiada(it)},
+            label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
@@ -80,16 +82,29 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit) {
             )
         }
 
-        if(cargando){
+        if (cargando) {
             CircularProgressIndicator()
-        } else{
+        } else {
             Button(
                 onClick = { viewModel.login() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
+                    .size(40.dp)
             ) {
-                Text("Iniciar sesión", fontSize = 18.sp)
+                Text("Iniciar Sesión", fontSize = 18.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { viewModel.registrarse() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .size(20.dp)
+            ) {
+                Text("Crear cuenta nueva", fontSize = 18.sp)
             }
         }
 

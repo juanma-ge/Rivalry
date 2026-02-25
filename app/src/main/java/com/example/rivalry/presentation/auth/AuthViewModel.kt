@@ -36,6 +36,11 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
         viewModelScope.launch {
 
+            if(!email.value.contains("@")){
+                _mensajeError.value = "Debe de introducir un correo electrónico con '@'."
+                return@launch
+            }
+
             _cargando.value = true
             _mensajeError.value = null
 
@@ -51,6 +56,34 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
         }
 
+    }
+
+    fun registrarse(){
+        viewModelScope.launch {
+
+            if(!email.value.contains("@")){
+                _mensajeError.value = "Debe de introducir un correo electrónico con '@'."
+                return@launch
+            }
+
+
+            if (contrasenia.value.length < 6) {
+                _mensajeError.value = "La contraseña debe tener al menos 6 caracteres."
+                return@launch
+            }
+
+            _cargando.value = true
+            _mensajeError.value = null
+
+            val userId = authRepository.registro(email.value, contrasenia.value)
+            if (userId != null){
+                _loginExitoso.value = true
+            } else {
+                _mensajeError.value = "Error: Este correo ya está registrado."
+            }
+
+
+        }
     }
 
 }

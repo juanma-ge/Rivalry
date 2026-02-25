@@ -1,6 +1,5 @@
 package com.example.rivalry.presentation.auth
 
-import android.R.attr.text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,13 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit, onNavegarARegistro: () -> Unit) {
+fun PantallaRegistro(viewModel: AuthViewModel, onRegistroExitoso: () -> Unit, onVolverALogin: () -> Unit) {
 
     val email by viewModel.email.collectAsState()
     val loginExitoso by viewModel.loginExitoso.collectAsState()
@@ -40,25 +37,22 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit, onNavega
     val cargando by viewModel.cargando.collectAsState()
     val mensajeError by viewModel.mensajeError.collectAsState()
 
-
-    LaunchedEffect(loginExitoso){
+    LaunchedEffect(loginExitoso) {
         if (loginExitoso){
-            onLoginExitoso()
+            onRegistroExitoso
         }
     }
 
     Column(
         modifier = Modifier
-            .padding(25.dp)
+            .padding(24.dp)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
+    ) {
 
-        Text("RIVALRY", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-        Text("Tu red social deportiva", fontSize = 15.sp, color = Color.Green)
-
-        Spacer(modifier = Modifier.height(40.dp))
+        Text("Crear cuenta nueva", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+        Spacer(modifier = Modifier.height(30.dp))
 
         OutlinedTextField(
             value = email,
@@ -96,7 +90,7 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit, onNavega
             CircularProgressIndicator()
         } else {
             Button(
-                onClick = { viewModel.login() },
+                onClick = { viewModel.registrarse() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -108,7 +102,7 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit, onNavega
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = {onNavegarARegistro},
+                onClick = {onVolverALogin},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)

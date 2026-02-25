@@ -28,7 +28,6 @@ class MainActivity : ComponentActivity() {
         val authRepository = AuthRepositoryImpl(firebaseAuth)
         val viewmodel = AuthViewModel(authRepository)
         setContent {
-            PantallaLogin(viewModel = viewmodel, onLoginExitoso = {Log.d("MainActivity", "¡Éxito! El usuario ha entrado correctamente.")})
         }
     }
 }

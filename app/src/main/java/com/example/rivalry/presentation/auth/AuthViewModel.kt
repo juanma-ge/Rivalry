@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rivalry.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -86,14 +87,38 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
         }
     }
-    fun guardarPerfilEnBaseDeDatos(){
+    fun guardarPerfilEnBaseDeDatos(apodo: String, onExito: () -> Unit){
 
         viewModelScope.launch {
 
             val conseguirIDUsuario = FirebaseAuth.getInstance().currentUser?.uid
             val conseguirEmailUsuario = FirebaseAuth.getInstance().currentUser?.email
 
-            if(conseguirIDUsuario != null && conseguirEmailUsuario != )
+            if(conseguirIDUsuario != null && conseguirEmailUsuario != null ){
+                val mapaUsuario = hashMapOf(
+                    "id" to conseguirIDUsuario,
+                    "email" to conseguirEmailUsuario,
+                    "nombreUsuario" to apodo,
+                    "avatarUrl" to "",
+                    "esAdmin" to false
+                )
+
+                FirebaseFirestore.getInstance().collection("usuarios")
+                    .document(conseguirEmailUsuario)
+                    .set(mapaUsuario)
+                    .addOnSuccessListener {
+                        _cargando.value = false
+                        onExito
+                    }
+                    .addOnFailureListener {
+                        _cargando.value = false
+                        _mensajeError.value = "Error al guardar los datos del perfil."
+                    }
+
+            } else {
+                _cargando.value = true
+                _mensajeError.value = "Error iniciando sesión."
+            }
 
         }
 

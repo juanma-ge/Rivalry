@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.rivalry.presentation.auth.AuthViewModel
+import com.example.rivalry.presentation.auth.PantallaHome
 import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
@@ -38,7 +39,7 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
         }
 
         composable("home") {
-            androidx.compose.material3.Text("¡Bienvenido a Rivalry! Has entrado con éxito.")
+            PantallaHome()
         }
 
     }

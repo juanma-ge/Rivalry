@@ -1,63 +1,42 @@
 package com.example.rivalry.presentation.auth
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.rivalry.domain.model.Deporte
+import com.example.rivalry.presentation.auth.components.ItemLiga
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaHome(){
+fun PantallaHome() {
 
     var pestaniaSeleccionada by remember { mutableStateOf(0) }
-    val titulosPestanias = listOf("Mis ligas, Explorar")
+    val titulosPestanias = listOf("Mis ligas", "Explorar")
+    var navSeleccionada by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("RIVALRY", fontWeight = FontWeight.Bold)},
+                    title = { Text("RIVALRY", fontWeight = FontWeight.Bold) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 TabRow(selectedTabIndex = pestaniaSeleccionada) {
-                    titulosPestanias.forEachIndexed{index, titulo ->
+                    titulosPestanias.forEachIndexed { index, titulo ->
                         Tab(
                             selected = pestaniaSeleccionada == index,
                             onClick = { pestaniaSeleccionada = index },
@@ -72,20 +51,20 @@ fun PantallaHome(){
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
-                    selected = true,
-                    onClick = {}
+                    selected = navSeleccionada == 0,
+                    onClick = { navSeleccionada = 0 }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Notifications, contentDescription = "Avisos") },
                     label = { Text("Avisos") },
-                    selected = false,
-                    onClick = {}
+                    selected = navSeleccionada == 1,
+                    onClick = { navSeleccionada = 1 }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
-                    selected = false,
-                    onClick = {}
+                    selected = navSeleccionada == 2,
+                    onClick = { navSeleccionada = 2 }
                 )
             }
         },
@@ -104,15 +83,45 @@ fun PantallaHome(){
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ){
+            contentAlignment = Alignment.TopCenter
+        ) {
             if (pestaniaSeleccionada == 0) {
-                Text("Aquí verás las ligas en las que participas.", color = MaterialTheme.colorScheme.outline)
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                    items(3) { index ->
+                        ItemLiga(
+                            nombre = "Liga de Barrio ${index + 1}",
+                            deporte = Deporte.FUTBOL_7.nombreVisual,
+                            participantes = 8,
+                            maxParticipantes = 12, // Usamos la variable nueva
+                            esPublica = false
+                        )
+                    }
+                }
             } else {
-                Text("Aquí descubrirás nuevas ligas públicas.", color = MaterialTheme.colorScheme.outline)
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        Text("Ligas buscando equipos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                    }
+                    items(5) { index ->
+                        ItemLiga(
+                            nombre = "Torneo Verano Ciudad ${index + 1}",
+                            deporte = Deporte.FUTBOL_SALA.nombreVisual,
+                            participantes = 4,
+                            maxParticipantes = 8, // Usamos la variable nueva
+                            esPublica = true
+                        )
+                    }
+                }
             }
         }
-
     }
-
 }

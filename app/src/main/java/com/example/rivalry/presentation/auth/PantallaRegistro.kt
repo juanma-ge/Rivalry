@@ -39,7 +39,7 @@ fun PantallaRegistro(viewModel: AuthViewModel, onRegistroExitoso: () -> Unit, on
 
     LaunchedEffect(loginExitoso) {
         if (loginExitoso){
-            onRegistroExitoso
+            onRegistroExitoso()
         }
     }
 
@@ -102,7 +102,7 @@ fun PantallaRegistro(viewModel: AuthViewModel, onRegistroExitoso: () -> Unit, on
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = {onVolverALogin},
+                onClick = {onVolverALogin()},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)

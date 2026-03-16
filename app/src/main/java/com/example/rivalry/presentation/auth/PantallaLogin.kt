@@ -108,7 +108,7 @@ fun PantallaLogin(viewModel: AuthViewModel, onLoginExitoso: () -> Unit, onNavega
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = {onNavegarARegistro},
+                onClick = {onNavegarARegistro()},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)

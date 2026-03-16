@@ -3,6 +3,7 @@ package com.example.rivalry.domain.model
 data class Liga(
     val id: String = "",
     val nombre: String = "",
+    val deporte: String = Deporte.FUTBOL_7.name,
     val imagenLiga: String = "",
     val creadorId: String = "",
     val descripcion: String = "",

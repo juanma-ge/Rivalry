@@ -7,5 +7,7 @@ data class Liga(
     val imagenLiga: String = "",
     val creadorId: String = "",
     val descripcion: String = "",
-    val idsMiembros: List<String> = emptyList()
+    val idsMiembros: List<String> = emptyList(),
+    val maxParticipantes: Int,
+    val esPublica: Boolean
 )

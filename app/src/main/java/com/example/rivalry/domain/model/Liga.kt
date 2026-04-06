@@ -8,6 +8,6 @@ data class Liga(
     val creadorId: String = "",
     val descripcion: String = "",
     val idsMiembros: List<String> = emptyList(),
-    val maxParticipantes: Int,
-    val esPublica: Boolean
+    val maxParticipantes: Int = 20,
+    val esPublica: Boolean = true
 )

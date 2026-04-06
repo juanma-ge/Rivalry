@@ -2,6 +2,7 @@ package com.example.rivalry.presentation.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
@@ -16,10 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Deporte
 import com.example.rivalry.presentation.auth.components.ItemLiga
+import com.example.rivalry.presentation.auth.home.LigaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaHome() {
+fun PantallaHome(viewModel: LigaViewModel) {
+
+    val misLigas by viewModel.misLigas.collectAsState()
+    val ligasExplorar by viewModel.ligasExplorar.collectAsState()
 
     var pestaniaSeleccionada by remember { mutableStateOf(0) }
     val titulosPestanias = listOf("Mis ligas", "Explorar")
@@ -93,13 +98,13 @@ fun PantallaHome() {
                     item {
                         Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                     }
-                    items(3) { index ->
+                    items(misLigas) { liga ->
                         ItemLiga(
-                            nombre = "Liga de Barrio ${index + 1}",
-                            deporte = Deporte.FUTBOL_7.nombreVisual,
-                            participantes = 8,
-                            maxParticipantes = 12, // Usamos la variable nueva
-                            esPublica = false
+                            nombre = liga.nombre,
+                            deporte = liga.deporte,
+                            participantes = liga.idsMiembros.size,
+                            maxParticipantes = liga.maxParticipantes,
+                            esPublica = liga.esPublica
                         )
                     }
                 }
@@ -111,13 +116,13 @@ fun PantallaHome() {
                     item {
                         Text("Ligas buscando equipos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                     }
-                    items(5) { index ->
+                    items(ligasExplorar) { liga ->
                         ItemLiga(
-                            nombre = "Torneo Verano Ciudad ${index + 1}",
-                            deporte = Deporte.FUTBOL_SALA.nombreVisual,
-                            participantes = 4,
-                            maxParticipantes = 8, // Usamos la variable nueva
-                            esPublica = true
+                            nombre = liga.nombre,
+                            deporte = liga.deporte,
+                            participantes = liga.idsMiembros.size,
+                            maxParticipantes = liga.maxParticipantes,
+                            esPublica = liga.esPublica
                         )
                     }
                 }

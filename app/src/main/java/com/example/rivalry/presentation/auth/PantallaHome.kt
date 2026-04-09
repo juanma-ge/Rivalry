@@ -21,7 +21,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaHome(viewModel: LigaViewModel) {
+fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit)  {
 
     val misLigas by viewModel.misLigas.collectAsState()
     val ligasExplorar by viewModel.ligasExplorar.collectAsState()

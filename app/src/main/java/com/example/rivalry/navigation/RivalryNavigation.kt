@@ -9,6 +9,8 @@ import com.example.rivalry.presentation.auth.PantallaHome
 import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
+import com.example.rivalry.presentation.auth.home.LigaViewModel
+import com.example.rivalry.presentation.home.PantallaCrearLiga
 
 @Composable
 fun RivalryNavigation(viewModel: AuthViewModel) {
@@ -39,7 +41,17 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
         }
 
         composable("home") {
-            PantallaHome()
+            val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+            PantallaHome(
+                viewModel = ligaViewModel,
+                onNavegarACrearLiga = { navController.navigate("crear_liga") }
+            )
+        }
+
+        composable("crear_liga") {
+            PantallaCrearLiga(
+                onVolver = { navController.popBackStack() }
+            )
         }
 
     }

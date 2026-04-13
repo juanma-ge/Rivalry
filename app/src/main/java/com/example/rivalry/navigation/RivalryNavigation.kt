@@ -49,8 +49,14 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
         }
 
         composable("crear_liga") {
+            val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
             PantallaCrearLiga(
-                onVolver = { navController.popBackStack() }
+                viewModel = ligaViewModel,
+                onVolver = { navController.popBackStack() },
+                onLigaCreada = {
+                    navController.popBackStack()
+                }
             )
         }
 

@@ -11,10 +11,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Deporte
+import com.example.rivalry.presentation.auth.home.LigaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaCrearLiga(onVolver: () -> Unit) {
+fun PantallaCrearLiga(viewModel: LigaViewModel, onVolver: () -> Unit, onLigaCreada: () -> Unit) {
 
     var nombre by remember { mutableStateOf("") }
     var maxParticipantes by remember { mutableFloatStateOf(20f) }
@@ -63,7 +64,7 @@ fun PantallaCrearLiga(onVolver: () -> Unit) {
                 OutlinedTextField(
                     value = deporteSeleccionado.nombreVisual,
                     onValueChange = {},
-                    readOnly = true, // Para que no escriban a mano
+                    readOnly = true,
                     label = { Text("Deporte") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
                     modifier = Modifier
@@ -121,7 +122,13 @@ fun PantallaCrearLiga(onVolver: () -> Unit) {
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { /* Aquí llamaremos al ViewModel para subir a Firebase */ },
+                onClick = { viewModel.crearLigaEnFirebase(
+                    nombre = nombre,
+                    deporte = deporteSeleccionado,
+                    maxParticipantes = maxParticipantes.toInt(),
+                    esPublica = esPublica,
+                    onExito = { onLigaCreada() }
+                ) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

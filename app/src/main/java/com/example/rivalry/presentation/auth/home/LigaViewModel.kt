@@ -28,18 +28,32 @@ class LigaViewModel : ViewModel() {
     private fun cargarLigas() {
         _cargando.value = true
 
-        _misLigas.value = listOf(
-            Liga(nombre = "Liga de Barrio 1", deporte = Deporte.FUTBOL_7.name, maxParticipantes = 12, esPublica = false),
-            Liga(nombre = "Torneo Oficina", deporte = Deporte.PADEL.name, maxParticipantes = 8, esPublica = false)
-        )
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-        _ligasExplorar.value = listOf(
-            Liga(nombre = "Torneo Verano Ciudad", deporte = Deporte.FUTBOL_SALA.name, maxParticipantes = 10, esPublica = true),
-            Liga(nombre = "Liga Universitaria", deporte = Deporte.BALONCESTO.name, maxParticipantes = 16, esPublica = true),
-            Liga(nombre = "Copa Nocturna", deporte = Deporte.FUTBOL_7.name, maxParticipantes = 8, esPublica = true)
-        )
+        if (userId == null) {
+            _cargando.value = false
+            return
+        }
 
-        _cargando.value = false
+        FirebaseFirestore.getInstance().collection("ligas")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) {
+                    _cargando.value = false
+                    return@addSnapshotListener
+                }
+
+                val todasLasLigas = snapshot.toObjects(Liga::class.java)
+
+                _misLigas.value = todasLasLigas.filter { liga ->
+                    liga.idsMiembros.contains(userId)
+                }
+
+                _ligasExplorar.value = todasLasLigas.filter { liga ->
+                    liga.esPublica && !liga.idsMiembros.contains(userId)
+                }
+
+                _cargando.value = false
+            }
     }
 
     fun crearLigaEnFirebase(

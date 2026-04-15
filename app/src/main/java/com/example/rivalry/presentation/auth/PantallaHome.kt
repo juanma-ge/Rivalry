@@ -75,7 +75,7 @@ fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit)  {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = {onNavegarACrearLiga()},
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Añadir")

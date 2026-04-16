@@ -11,13 +11,18 @@ import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.home.PantallaCrearLiga
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RivalryNavigation(viewModel: AuthViewModel) {
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login"){
+    val usuarioActual = FirebaseAuth.getInstance().currentUser
+    val rutaInicial = if (usuarioActual != null) "home" else "login"
+
+
+    NavHost(navController = navController, startDestination = rutaInicial){
         composable("login"){
             PantallaLogin(
                 viewModel = viewModel,

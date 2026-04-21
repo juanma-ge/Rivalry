@@ -10,6 +10,7 @@ import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
+import com.example.rivalry.presentation.auth.home.PantallaDetalleLiga
 import com.example.rivalry.presentation.home.PantallaCrearLiga
 import com.google.firebase.auth.FirebaseAuth
 
@@ -49,7 +50,8 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
             val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
             PantallaHome(
                 viewModel = ligaViewModel,
-                onNavegarACrearLiga = { navController.navigate("crear_liga") }
+                onNavegarACrearLiga = { navController.navigate("crear_liga") },
+                onNavegarADetalleLiga = { ligaId -> navController.navigate("detalle_liga/$ligaId") }
             )
         }
 
@@ -62,6 +64,15 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
                 onLigaCreada = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("detalle_liga/{ligaId}") { backStackEntry ->
+            val ligaId = backStackEntry.arguments?.getString("ligaId") ?: ""
+
+            PantallaDetalleLiga(
+                ligaId = ligaId,
+                onVolver = { navController.popBackStack() }
             )
         }
 

@@ -1,5 +1,6 @@
 package com.example.rivalry.presentation.auth.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,11 +11,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ItemLiga(nombre: String, deporte: String, participantes: Int, maxParticipantes: Int, esPublica: Boolean) {
+fun ItemLiga(
+    nombre: String,
+    deporte: String,
+    participantes: Int,
+    maxParticipantes: Int,
+    esPublica: Boolean,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable {onClick()},
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -47,7 +56,7 @@ fun ItemLiga(nombre: String, deporte: String, participantes: Int, maxParticipant
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "$deporte • $participantes/$maxParticipantes equipos",
+                text = "$deporte • $participantes/$maxParticipantes equiposxº",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

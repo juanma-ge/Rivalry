@@ -21,7 +21,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit)  {
+fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit, onNavegarADetalleLiga: (String) -> Unit)  {
 
     val misLigas by viewModel.misLigas.collectAsState()
     val ligasExplorar by viewModel.ligasExplorar.collectAsState()
@@ -104,8 +104,12 @@ fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit)  {
                             deporte = liga.deporte,
                             participantes = liga.idsMiembros.size,
                             maxParticipantes = liga.maxParticipantes,
-                            esPublica = liga.esPublica
-                        )
+                            esPublica = liga.esPublica,
+                            onClick = {
+                                if (liga.id.isNotBlank()) {
+                                    onNavegarADetalleLiga(liga.id)
+                                }
+                            }                        )
                     }
                 }
             } else {
@@ -122,7 +126,12 @@ fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit)  {
                             deporte = liga.deporte,
                             participantes = liga.idsMiembros.size,
                             maxParticipantes = liga.maxParticipantes,
-                            esPublica = liga.esPublica
+                            esPublica = liga.esPublica,
+                            onClick = {
+                                if (liga.id.isNotBlank()) {
+                                    onNavegarADetalleLiga(liga.id)
+                                }
+                            }
                         )
                     }
                 }

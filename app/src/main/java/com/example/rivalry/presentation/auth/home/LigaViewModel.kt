@@ -42,8 +42,10 @@ class LigaViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
-                val todasLasLigas = snapshot.toObjects(Liga::class.java)
-
+                val todasLasLigas = snapshot.documents.mapNotNull { documento ->
+                    val liga = documento.toObject(Liga::class.java)
+                    liga?.copy(id = documento.id)
+                }
                 _misLigas.value = todasLasLigas.filter { liga ->
                     liga.idsMiembros.contains(userId)
                 }

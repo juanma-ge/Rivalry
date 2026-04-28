@@ -10,8 +10,8 @@ import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
-import com.example.rivalry.presentation.auth.home.PantallaDetalleLiga
 import com.example.rivalry.presentation.home.PantallaCrearLiga
+import com.example.rivalry.presentation.home.PantallaDetalleLiga
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -69,10 +69,14 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
 
         composable("detalle_liga/{ligaId}") { backStackEntry ->
             val ligaId = backStackEntry.arguments?.getString("ligaId") ?: ""
+            val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
             PantallaDetalleLiga(
                 ligaId = ligaId,
-                onVolver = { navController.popBackStack() }
+                viewModel = ligaViewModel,
+                onVolver = {
+                    navController.popBackStack()
+                }
             )
         }
 

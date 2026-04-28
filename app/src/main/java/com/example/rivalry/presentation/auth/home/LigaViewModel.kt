@@ -8,7 +8,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.google.firebase.firestore.FieldValue
 
 class LigaViewModel : ViewModel() {
 
@@ -96,6 +98,50 @@ class LigaViewModel : ViewModel() {
                     }
             }
         }
+    }
+
+    private val _ligaSeleccionada = MutableStateFlow<Liga?>(null)
+    val ligaSeleccionada: StateFlow<Liga?> = _ligaSeleccionada.asStateFlow()
+
+    fun cargarDetalleLiga(ligaId: String) {
+        _cargando.value = true
+
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) {
+                    _cargando.value = false
+                    return@addSnapshotListener
+                }
+
+                val liga = snapshot.toObject(Liga::class.java)
+                _ligaSeleccionada.value = liga?.copy(id = snapshot.id)
+
+                _cargando.value = false
+            }
+    }
+
+    fun limpiarLigaSeleccionada() {
+        _ligaSeleccionada.value = null
+    }
+
+    fun unirseALiga(ligaId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
+            .update("idsMiembros", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+            }
+            .addOnFailureListener {
+            }
+    }
+
+    fun salirDeLiga(ligaId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
+            .update("idsMiembros", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+            }
     }
 
 }

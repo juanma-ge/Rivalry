@@ -62,12 +62,10 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
     fun registrarse(){
         viewModelScope.launch {
-
             if(!email.value.contains("@")){
                 _mensajeError.value = "Debe de introducir un correo electrónico con '@'."
                 return@launch
             }
-
 
             if (contrasenia.value.length < 6) {
                 _mensajeError.value = "La contraseña debe tener al menos 6 caracteres."
@@ -81,12 +79,12 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
             if (userId != null){
                 _loginExitoso.value = true
             } else {
+                _cargando.value = false
                 _mensajeError.value = "Error: Este correo ya está registrado."
             }
-
-
         }
     }
+
     fun guardarPerfilEnBaseDeDatos(apodo: String, onExito: () -> Unit){
 
         viewModelScope.launch {
@@ -98,17 +96,17 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
                 val mapaUsuario = hashMapOf(
                     "id" to conseguirIDUsuario,
                     "email" to conseguirEmailUsuario,
-                    "nombreUsuario" to apodo,
+                    "nombre" to apodo,
                     "avatarUrl" to "",
                     "esAdmin" to false
                 )
 
                 FirebaseFirestore.getInstance().collection("usuarios")
-                    .document(conseguirEmailUsuario)
+                    .document(conseguirIDUsuario)
                     .set(mapaUsuario)
                     .addOnSuccessListener {
                         _cargando.value = false
-                        onExito
+                        onExito()
                     }
                     .addOnFailureListener {
                         _cargando.value = false
@@ -119,9 +117,7 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
                 _cargando.value = true
                 _mensajeError.value = "Error iniciando sesión."
             }
-
         }
-
     }
 
 }

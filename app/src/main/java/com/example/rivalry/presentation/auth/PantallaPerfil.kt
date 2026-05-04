@@ -64,7 +64,9 @@ fun PantallaPerfil(viewModel: AuthViewModel, onPerfilGuardado: () -> Unit){
         Button(
             enabled = apodo.length >= 3,
             onClick = {
-                onPerfilGuardado()
+                viewModel.guardarPerfilEnBaseDeDatos(apodo) {
+                    onPerfilGuardado()
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

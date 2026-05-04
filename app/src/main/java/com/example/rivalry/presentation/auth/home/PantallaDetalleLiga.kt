@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,13 @@ fun PantallaDetalleLiga(
     var pestaniaSeleccionada by remember { mutableStateOf(0) }
 
     val liga by viewModel.ligaSeleccionada.collectAsState()
+    val miembros by viewModel.miembrosLiga.collectAsState()
+
+    LaunchedEffect(liga?.idsMiembros) {
+        liga?.let { l ->
+            viewModel.cargarMiembros(l.idsMiembros, l.creadorId)
+        }
+    }
 
     LaunchedEffect(ligaId) {
         viewModel.cargarDetalleLiga(ligaId)
@@ -55,6 +63,7 @@ fun PantallaDetalleLiga(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // --- CABECERA DE LA LIGA ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -62,56 +71,51 @@ fun PantallaDetalleLiga(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = liga?.nombre ?: "",
+                    text = liga?.nombre ?: "Cargando...",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 val miId = FirebaseAuth.getInstance().currentUser?.uid
+                val soyCreador = liga?.creadorId == miId
                 val estoyApuntado = liga?.idsMiembros?.contains(miId) == true
                 val plazasOcupadas = liga?.idsMiembros?.size ?: 0
-                val plazasTotales = liga?.maxParticipantes ?: 0
+                val plazasTotales = if ((liga?.maxParticipantes ?: 0) > 0) liga!!.maxParticipantes else 20
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (liga != null) {
-                        if (estoyApuntado) {
-                            OutlinedButton(onClick = { viewModel.salirDeLiga(ligaId) }) {
-                                Text("Salir", color = Color.Red)
-                            }
-                        } else {
-                            if (plazasOcupadas < plazasTotales) {
-                                Button(onClick = { viewModel.unirseALiga(ligaId) }) {
-                                    Text("Unirme")
+                Box(modifier = Modifier.fillMaxWidth()) {
+
+                    Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                        if (liga != null) {
+                            if (estoyApuntado) {
+                                OutlinedButton(onClick = { viewModel.salirDeLiga(ligaId) { onVolver() } }) {
+                                    Text("Salir", color = Color.Red)
                                 }
                             } else {
-                                Text("Llena", color = Color.Red, fontWeight = FontWeight.Bold)
+                                if (plazasOcupadas < plazasTotales) {
+                                    Button(onClick = { viewModel.unirseALiga(ligaId) }) {
+                                        Text("Unirme")
+                                    }
+                                } else {
+                                    Text("Llena", color = Color.Red, fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
 
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray),
+                            .background(Color.LightGray)
+                            .align(Alignment.Center),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("Logo", color = Color.DarkGray)
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Spacer(modifier = Modifier.width(80.dp))
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = liga?.deporte ?: "",
@@ -119,6 +123,7 @@ fun PantallaDetalleLiga(
                     fontSize = 14.sp
                 )
             }
+
 
             ScrollableTabRow(
                 selectedTabIndex = pestaniaSeleccionada,
@@ -152,16 +157,51 @@ fun PantallaDetalleLiga(
                     2 -> Text("Información general: Normas, administrador, etc.")
 
                     3 -> {
-                        val plazasOcupadas = liga?.idsMiembros?.size ?: 0
-                        val plazasTotales = liga?.maxParticipantes ?: 0
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val miembros by viewModel.miembrosLiga.collectAsState()
+
+                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                             Text(
-                                text = "Participantes: $plazasOcupadas / $plazasTotales",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Participantes: ${liga?.idsMiembros?.size ?: 0} / ${liga?.maxParticipantes ?: 0}",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Aquí irá la lista de nombres de los equipos.")
+
+                            if (miembros.isEmpty()) {
+                                Text(
+                                    "Cargando lista de jugadores...",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    color = Color.Gray
+                                )
+                            } else {
+                                androidx.compose.foundation.lazy.LazyColumn {
+                                    items(miembros.size) { index ->
+                                        val miembro = miembros[index]
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(16.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text(text = miembro.nombre, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+
+                                                if (miembro.esAdmin) {
+                                                    Text("👑 ADMIN", color = Color(0xFFDAA520), fontWeight = FontWeight.Black, fontSize = 11.sp)
+                                                } else {
+                                                    Text("Jugador", color = Color.Gray, fontSize = 11.sp)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 

@@ -10,6 +10,7 @@ import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
+import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.home.PantallaCrearLiga
 import com.example.rivalry.presentation.home.PantallaDetalleLiga
 import com.google.firebase.auth.FirebaseAuth
@@ -21,7 +22,6 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
 
     val usuarioActual = FirebaseAuth.getInstance().currentUser
     val rutaInicial = if (usuarioActual != null) "home" else "login"
-
 
     NavHost(navController = navController, startDestination = rutaInicial){
         composable("login"){
@@ -48,10 +48,18 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
 
         composable("home") {
             val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+            val partidoViewModel: PartidoSueltoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
             PantallaHome(
                 viewModel = ligaViewModel,
+                partidoViewModel = partidoViewModel,
                 onNavegarACrearLiga = { navController.navigate("crear_liga") },
-                onNavegarADetalleLiga = { ligaId -> navController.navigate("detalle_liga/$ligaId") }
+                onNavegarADetalleLiga = { ligaId -> navController.navigate("detalle_liga/$ligaId") },
+                onCerrarSesion = {
+                    navController.navigate("login") {
+                        popUpTo(0)
+                    }
+                }
             )
         }
 
@@ -79,7 +87,5 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
                 }
             )
         }
-
     }
-
 }

@@ -4,49 +4,67 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.rivalry.domain.model.Deporte
 import com.example.rivalry.presentation.auth.components.ItemLiga
 import com.example.rivalry.presentation.auth.home.LigaViewModel
+import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
+import com.example.rivalry.presentation.auth.home.SeccionPartidos
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit, onNavegarADetalleLiga: (String) -> Unit)  {
+fun PantallaHome(
+    viewModel: LigaViewModel,
+    partidoViewModel: PartidoSueltoViewModel,
+    onNavegarACrearLiga: () -> Unit,
+    onNavegarADetalleLiga: (String) -> Unit,
+    onCerrarSesion: () -> Unit
+) {
 
     val misLigas by viewModel.misLigas.collectAsState()
     val ligasExplorar by viewModel.ligasExplorar.collectAsState()
 
     var pestaniaSeleccionada by remember { mutableStateOf(0) }
     val titulosPestanias = listOf("Mis ligas", "Explorar")
+
     var navSeleccionada by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("RIVALRY", fontWeight = FontWeight.Bold) },
+                    title = {
+                        val titulo = when(navSeleccionada) {
+                            0 -> "RIVALRY LIGAS"
+                            1 -> "PARTIDOS"
+                            2 -> "AVISOS"
+                            else -> "MI PERFIL"
+                        }
+                        Text(titulo, fontWeight = FontWeight.Bold)
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
-                TabRow(selectedTabIndex = pestaniaSeleccionada) {
-                    titulosPestanias.forEachIndexed { index, titulo ->
-                        Tab(
-                            selected = pestaniaSeleccionada == index,
-                            onClick = { pestaniaSeleccionada = index },
-                            text = { Text(titulo, fontSize = 16.sp) }
-                        )
+
+                if (navSeleccionada == 0) {
+                    TabRow(selectedTabIndex = pestaniaSeleccionada) {
+                        titulosPestanias.forEachIndexed { index, titulo ->
+                            Tab(
+                                selected = pestaniaSeleccionada == index,
+                                onClick = { pestaniaSeleccionada = index },
+                                text = { Text(titulo, fontSize = 16.sp) }
+                            )
+                        }
                     }
                 }
             }
@@ -54,85 +72,143 @@ fun PantallaHome(viewModel: LigaViewModel, onNavegarACrearLiga: () -> Unit, onNa
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Ligas") },
+                    label = { Text("Ligas") },
                     selected = navSeleccionada == 0,
                     onClick = { navSeleccionada = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Notifications, contentDescription = "Avisos") },
-                    label = { Text("Avisos") },
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Partidos") },
+                    label = { Text("Partidos") },
                     selected = navSeleccionada == 1,
                     onClick = { navSeleccionada = 1 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") },
+                    icon = { Icon(Icons.Default.Notifications, contentDescription = "Avisos") },
+                    label = { Text("Avisos") },
                     selected = navSeleccionada == 2,
                     onClick = { navSeleccionada = 2 }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = navSeleccionada == 3,
+                    onClick = { navSeleccionada = 3 }
                 )
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {onNavegarACrearLiga()},
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir")
+            if (navSeleccionada == 0) {
+                FloatingActionButton(
+                    onClick = { onNavegarACrearLiga() },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear Liga")
+                }
+            } else if (navSeleccionada == 1) {
+                FloatingActionButton(
+                    onClick = { /* Aquí navegaremos a crear un partido suelto en el futuro */ },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Crear Partido")
+                }
             }
-        },
-        floatingActionButtonPosition = FabPosition.Center
+        }
     ) { paddingValues ->
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.TopCenter
+                .padding(paddingValues)
         ) {
-            if (pestaniaSeleccionada == 0) {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
-                    }
-                    items(misLigas) { liga ->
-                        ItemLiga(
-                            nombre = liga.nombre,
-                            deporte = liga.deporte,
-                            participantes = liga.idsMiembros.size,
-                            maxParticipantes = liga.maxParticipantes,
-                            esPublica = liga.esPublica,
-                            onClick = {
-                                if (liga.id.isNotBlank()) {
-                                    onNavegarADetalleLiga(liga.id)
-                                }
-                            }                        )
+            when (navSeleccionada) {
+                0 -> {
+                    if (pestaniaSeleccionada == 0) {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            item {
+                                Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                            }
+                            items(misLigas) { liga ->
+                                ItemLiga(
+                                    nombre = liga.nombre,
+                                    deporte = liga.deporte,
+                                    participantes = liga.idsMiembros.size,
+                                    maxParticipantes = liga.maxParticipantes,
+                                    esPublica = liga.esPublica,
+                                    onClick = {
+                                        if (liga.id.isNotBlank()) {
+                                            onNavegarADetalleLiga(liga.id)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            item {
+                                Text("Ligas buscando equipos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                            }
+                            items(ligasExplorar) { liga ->
+                                ItemLiga(
+                                    nombre = liga.nombre,
+                                    deporte = liga.deporte,
+                                    participantes = liga.idsMiembros.size,
+                                    maxParticipantes = liga.maxParticipantes,
+                                    esPublica = liga.esPublica,
+                                    onClick = {
+                                        if (liga.id.isNotBlank()) {
+                                            onNavegarADetalleLiga(liga.id)
+                                        }
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        Text("Ligas buscando equipos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+
+                1 -> {
+                    SeccionPartidos(viewModel = partidoViewModel)
+                }
+
+                2 -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("No tienes notificaciones nuevas", color = Color.Gray)
                     }
-                    items(ligasExplorar) { liga ->
-                        ItemLiga(
-                            nombre = liga.nombre,
-                            deporte = liga.deporte,
-                            participantes = liga.idsMiembros.size,
-                            maxParticipantes = liga.maxParticipantes,
-                            esPublica = liga.esPublica,
+                }
+
+                3 -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(100.dp), tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Ajustes de Perfil", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(FirebaseAuth.getInstance().currentUser?.email ?: "Usuario", color = Color.Gray)
+
+                        Spacer(modifier = Modifier.height(40.dp))
+
+                        Button(
                             onClick = {
-                                if (liga.id.isNotBlank()) {
-                                    onNavegarADetalleLiga(liga.id)
-                                }
-                            }
-                        )
+                                FirebaseAuth.getInstance().signOut()
+                                onCerrarSesion()
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Text("Cerrar Sesión", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

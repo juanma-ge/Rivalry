@@ -12,6 +12,7 @@ import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.home.PantallaCrearLiga
+import com.example.rivalry.presentation.home.PantallaCrearPartido
 import com.example.rivalry.presentation.home.PantallaDetalleLiga
 import com.google.firebase.auth.FirebaseAuth
 
@@ -55,6 +56,7 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
                 partidoViewModel = partidoViewModel,
                 onNavegarACrearLiga = { navController.navigate("crear_liga") },
                 onNavegarADetalleLiga = { ligaId -> navController.navigate("detalle_liga/$ligaId") },
+                onNavegarACrearPartido = { navController.navigate("crear_partido") },
                 onCerrarSesion = {
                     navController.navigate("login") {
                         popUpTo(0)
@@ -87,5 +89,15 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
                 }
             )
         }
+
+        composable("crear_partido") {
+            val partidoViewModel: PartidoSueltoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+            PantallaCrearPartido(
+                viewModel = partidoViewModel,
+                onVolver = { navController.popBackStack() },
+                onPartidoCreado = { navController.popBackStack() }
+            )
+        }
+
     }
 }

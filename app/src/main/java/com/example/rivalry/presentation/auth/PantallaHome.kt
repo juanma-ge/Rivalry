@@ -26,6 +26,7 @@ fun PantallaHome(
     partidoViewModel: PartidoSueltoViewModel,
     onNavegarACrearLiga: () -> Unit,
     onNavegarADetalleLiga: (String) -> Unit,
+    onNavegarACrearPartido: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
 
@@ -107,7 +108,7 @@ fun PantallaHome(
                 }
             } else if (navSeleccionada == 1) {
                 FloatingActionButton(
-                    onClick = { /* Aquí navegaremos a crear un partido suelto en el futuro */ },
+                    onClick = { onNavegarACrearPartido() },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Crear Partido")

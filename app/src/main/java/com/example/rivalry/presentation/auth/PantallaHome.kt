@@ -18,6 +18,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.auth.home.SeccionPartidos
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.material.icons.filled.Search
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +38,8 @@ fun PantallaHome(
     val titulosPestanias = listOf("Mis ligas", "Explorar")
 
     var navSeleccionada by remember { mutableStateOf(0) }
+
+    var busquedaLiga by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -148,26 +151,55 @@ fun PantallaHome(
                             }
                         }
                     } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            item {
-                                Text("Ligas buscando equipos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
-                            }
-                            items(ligasExplorar) { liga ->
-                                ItemLiga(
-                                    nombre = liga.nombre,
-                                    deporte = liga.deporte,
-                                    participantes = liga.idsMiembros.size,
-                                    maxParticipantes = liga.maxParticipantes,
-                                    esPublica = liga.esPublica,
-                                    onClick = {
-                                        if (liga.id.isNotBlank()) {
-                                            onNavegarADetalleLiga(liga.id)
-                                        }
+                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                            OutlinedTextField(
+                                value = busquedaLiga,
+                                onValueChange = { busquedaLiga = it },
+                                label = { Text("Buscar liga por nombre, ciudad o provincia") },
+                                modifier = Modifier.fillMaxWidth(),
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                                singleLine = true
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                val ligasFiltradas = if (busquedaLiga.isBlank()) {
+                                    ligasExplorar
+                                } else {
+                                    ligasExplorar.filter {
+                                        it.ciudad.contains(busquedaLiga, ignoreCase = true) ||
+                                                it.provincia.contains(busquedaLiga, ignoreCase = true) ||
+                                                it.nombre.contains(busquedaLiga, ignoreCase = true)
                                     }
-                                )
+                                }
+
+                                if (ligasFiltradas.isEmpty()) {
+                                    item {
+                                        Text(
+                                            "No hay ligas disponibles en '${busquedaLiga}'.",
+                                            color = Color.Gray,
+                                            modifier = Modifier.padding(top = 16.dp)
+                                        )
+                                    }
+                                } else {
+                                    items(ligasFiltradas) { liga ->
+                                        ItemLiga(
+                                            nombre = liga.nombre,
+                                            deporte = liga.deporte,
+                                            participantes = liga.idsMiembros.size,
+                                            maxParticipantes = liga.maxParticipantes,
+                                            esPublica = liga.esPublica,
+                                            onClick = {
+                                                if (liga.id.isNotBlank()) {
+                                                    onNavegarADetalleLiga(liga.id)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

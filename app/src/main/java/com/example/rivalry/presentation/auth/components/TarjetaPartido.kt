@@ -38,6 +38,7 @@ fun TarjetaPartido(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text("📅 ${partido.fecha} - 🕒 ${partido.hora}", fontSize = 14.sp)
+            Text("🌍 ${partido.ciudad}, ${partido.provincia}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
             Text("📍 ${partido.ubicacion} (${partido.nivel})", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -50,11 +51,18 @@ fun TarjetaPartido(
                     Text("Salir del partido")
                 }
             } else {
+                val estaLleno = partido.idsJugadores.size >= partido.maxJugadores
+
                 Button(
                     onClick = { viewModel.unirseAPartido(partido.id) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !estaLleno,
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContainerColor = Color.Gray,
+                        disabledContentColor = Color.White
+                    )
                 ) {
-                    Text("Apuntarse")
+                    Text(if (estaLleno) "Partido Completo" else "Apuntarse")
                 }
             }
         }

@@ -66,6 +66,8 @@ class LigaViewModel : ViewModel() {
         deporte: Deporte,
         maxParticipantes: Int,
         esPublica: Boolean,
+        provincia: String,
+        ciudad: String,
         onExito: () -> Unit
     ) {
         viewModelScope.launch {
@@ -81,7 +83,9 @@ class LigaViewModel : ViewModel() {
                     creadorId = creadorId,
                     maxParticipantes = maxParticipantes,
                     esPublica = esPublica,
-                    idsMiembros = listOf(creadorId)
+                    idsMiembros = listOf(creadorId),
+                    provincia = provincia,
+                    ciudad = ciudad
                 )
 
                 FirebaseFirestore.getInstance().collection("ligas")

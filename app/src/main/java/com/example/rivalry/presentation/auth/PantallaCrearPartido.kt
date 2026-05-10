@@ -20,7 +20,10 @@ fun PantallaCrearPartido(
     onPartidoCreado: () -> Unit
 ) {
     var expandidoDeporte by remember { mutableStateOf(false) }
-    var deporteSeleccionado by remember { mutableStateOf(Deporte.PADEL) } // Por defecto Pádel para pachangas
+    var deporteSeleccionado by remember { mutableStateOf(Deporte.FUTBOL_SALA) }
+
+    var provincia by remember { mutableStateOf("") }
+    var ciudad by remember { mutableStateOf("") }
 
     var maxJugadores by remember { mutableFloatStateOf(4f) }
     var fecha by remember { mutableStateOf("") }
@@ -78,6 +81,23 @@ fun PantallaCrearPartido(
                         )
                     }
                 }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = provincia,
+                    onValueChange = { provincia = it },
+                    label = { Text("Provincia (ej: Cádiz)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = ciudad,
+                    onValueChange = { ciudad = it },
+                    label = { Text("Ciudad (ej: Jerez)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
             }
 
             ExposedDropdownMenuBox(
@@ -150,13 +170,15 @@ fun PantallaCrearPartido(
                         fecha = fecha,
                         hora = hora,
                         ubicacion = ubicacion,
-                        nivel = nivelSeleccionado
+                        nivel = nivelSeleccionado,
+                        provincia = provincia,
+                        ciudad = ciudad
                     ) {
                         onPartidoCreado()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                enabled = fecha.isNotBlank() && hora.isNotBlank() && ubicacion.isNotBlank()
+                enabled = fecha.isNotBlank() && hora.isNotBlank() && ubicacion.isNotBlank() && provincia.isNotBlank() && ciudad.isNotBlank()
             ) {
                 Text("Publicar Partido", fontSize = 18.sp)
             }

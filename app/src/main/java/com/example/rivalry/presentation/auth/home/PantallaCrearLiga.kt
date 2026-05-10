@@ -24,6 +24,9 @@ fun PantallaCrearLiga(viewModel: LigaViewModel, onVolver: () -> Unit, onLigaCrea
     var expandido by remember { mutableStateOf(false) }
     var deporteSeleccionado by remember { mutableStateOf(Deporte.FUTBOL_7) }
 
+    var provincia by remember { mutableStateOf("") }
+    var ciudad by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,6 +90,23 @@ fun PantallaCrearLiga(viewModel: LigaViewModel, onVolver: () -> Unit, onLigaCrea
                 }
             }
 
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = provincia,
+                    onValueChange = { provincia = it },
+                    label = { Text("Provincia (ej: Madrid)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = ciudad,
+                    onValueChange = { ciudad = it },
+                    label = { Text("Ciudad (ej: Getafe)") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
             Column {
                 Text(
                     text = "Límite de equipos: ${maxParticipantes.toInt()}",
@@ -127,12 +147,14 @@ fun PantallaCrearLiga(viewModel: LigaViewModel, onVolver: () -> Unit, onLigaCrea
                     deporte = deporteSeleccionado,
                     maxParticipantes = maxParticipantes.toInt(),
                     esPublica = esPublica,
+                    provincia = provincia,
+                    ciudad = ciudad,
                     onExito = { onLigaCreada() }
                 ) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                enabled = nombre.isNotBlank()
+                enabled = nombre.isNotBlank() && provincia.isNotBlank() && ciudad.isNotBlank()
             ) {
                 Text("Crear Competición", fontSize = 18.sp)
             }

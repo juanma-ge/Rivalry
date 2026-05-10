@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+
 class PartidoSueltoViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
@@ -48,7 +49,16 @@ class PartidoSueltoViewModel : ViewModel() {
             }
     }
 
-    fun crearPartido(deporte: String, maxJugadores: Int, fecha: String, hora: String, ubicacion: String, nivel: String, onExito: () -> Unit) {
+    fun crearPartido(deporte: String,
+                     maxJugadores: Int,
+                     fecha: String,
+                     hora: String,
+                     ubicacion: String,
+                     nivel: String,
+                     provincia: String,
+                     ciudad: String,
+                     onExito: () -> Unit
+    ) {
         val userId = auth.currentUser?.uid ?: return
 
         val nuevoPartido = PartidoSuelto(
@@ -59,7 +69,9 @@ class PartidoSueltoViewModel : ViewModel() {
             fecha = fecha,
             hora = hora,
             ubicacion = ubicacion,
-            nivel = nivel
+            nivel = nivel,
+            provincia = provincia,
+            ciudad = ciudad
         )
 
         db.collection("partidosSueltos").add(nuevoPartido).addOnSuccessListener {

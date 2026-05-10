@@ -3,6 +3,8 @@ package com.example.rivalry.presentation.auth.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +19,8 @@ import com.example.rivalry.presentation.auth.components.TarjetaPartido
 fun SeccionPartidos(viewModel: PartidoSueltoViewModel) {
     val misPartidos by viewModel.misPartidos.collectAsState()
     val partidosExplorar by viewModel.partidosExplorar.collectAsState()
+
+    var busqueda by remember { mutableStateOf("") }
 
     if (misPartidos.isEmpty() && partidosExplorar.isEmpty()) {
         Column(
@@ -42,13 +46,41 @@ fun SeccionPartidos(viewModel: PartidoSueltoViewModel) {
                 }
             }
 
-            if (partidosExplorar.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Buscar Partidos", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.secondary)
-                    Spacer(modifier = Modifier.height(8.dp))
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Buscar Partidos", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.secondary)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = busqueda,
+                    onValueChange = { busqueda = it },
+                    label = { Text("Filtrar por ciudad o provincia") },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            val partidosFiltrados = if (busqueda.isBlank()) {
+                partidosExplorar
+            } else {
+                partidosExplorar.filter {
+                    it.ciudad.contains(busqueda, ignoreCase = true) ||
+                            it.provincia.contains(busqueda, ignoreCase = true)
                 }
-                items(partidosExplorar) { partido ->
+            }
+
+            if (partidosFiltrados.isEmpty()) {
+                item {
+                    Text(
+                        "No hemos encontrado partidos en '${busqueda}'.",
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+            } else {
+                items(partidosFiltrados) { partido ->
                     TarjetaPartido(partido = partido, esMio = false, viewModel = viewModel)
                 }
             }

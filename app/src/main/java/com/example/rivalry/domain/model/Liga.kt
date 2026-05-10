@@ -9,5 +9,7 @@ data class Liga(
     val descripcion: String = "",
     val idsMiembros: List<String> = emptyList(),
     val maxParticipantes: Int = 20,
-    val esPublica: Boolean = true
+    val esPublica: Boolean = true,
+    val provincia: String = "",
+    val ciudad: String = ""
 )

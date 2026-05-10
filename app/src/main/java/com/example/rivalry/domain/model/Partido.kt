@@ -9,5 +9,8 @@ data class Partido(
     val terminado: Boolean = false,
     val dateTimestamp: Long = 0L,
     val prediccionTiempo: String = "",
-    val probabilidadVictoriaLocal: String = ""
+    val probabilidadVictoriaLocal: String = "",
+    val provincia: String = "",
+    val ciudad: String = "",
+    val ubicacion: String = ""
 )

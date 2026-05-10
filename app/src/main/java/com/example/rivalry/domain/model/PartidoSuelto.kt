@@ -9,5 +9,7 @@ data class PartidoSuelto(
     val fecha: String = "",
     val hora: String = "",
     val ubicacion: String = "",
-    val nivel: String = "Amateur"
+    val nivel: String = "Amateur",
+    val provincia: String = "",
+    val ciudad: String = ""
 )

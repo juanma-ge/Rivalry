@@ -11,5 +11,7 @@ data class Liga(
     val maxParticipantes: Int = 20,
     val esPublica: Boolean = true,
     val provincia: String = "",
-    val ciudad: String = ""
+    val ciudad: String = "",
+    val idsAgentesLibres: List<String> = emptyList(),
+    val nombresEquipos: Map<String, String> = emptyMap()
 )

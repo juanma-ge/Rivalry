@@ -1,34 +1,39 @@
 package com.example.rivalry.presentation.auth.chat
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.rivalry.domain.model.Liga
-import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.presentation.auth.home.AgenteLibreUI
 
 @Composable
-fun PestaniaEquipos(liga: Liga?, miembrosLista: List<MiembroUI>) {
+fun PestaniaFichajes(agentes: List<AgenteLibreUI>, nombreLiga: String) {
+    val context = LocalContext.current
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
-            text = "Equipos inscritos: ${liga?.idsMiembros?.size ?: 0} / ${liga?.maxParticipantes ?: 0}",
+            text = "Mercado de Agentes Libres",
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
         )
         Text(
-            text = "Cada usuario inscrito representa a un equipo como su Capitán.",
+            text = "Jugadores sin equipo que buscan ser fichados.",
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             textAlign = TextAlign.Center,
             color = Color.Gray,
@@ -36,16 +41,16 @@ fun PestaniaEquipos(liga: Liga?, miembrosLista: List<MiembroUI>) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (miembrosLista.isEmpty()) {
+        if (agentes.isEmpty()) {
             Text(
-                "Cargando lista de capitanes...",
+                "Nadie busca equipo ahora mismo.",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 color = Color.Gray
             )
         } else {
             LazyColumn {
-                items(miembrosLista) { miembro ->
+                items(agentes) { agente ->
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -58,12 +63,23 @@ fun PestaniaEquipos(liga: Liga?, miembrosLista: List<MiembroUI>) {
                             Spacer(modifier = Modifier.width(12.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(text = miembro.nombreEquipo, fontWeight = FontWeight.Bold)
-                                Text(text = "Capitán: ${miembro.nombre}", color = Color.Gray, fontSize = 12.sp)
+                                Text(text = agente.nombre, fontWeight = FontWeight.Bold)
+                                Text(text = "Busca equipo", color = Color.Gray, fontSize = 12.sp)
                             }
 
-                            if (miembro.esAdmin) {
-                                Text("👑 ADMIN", color = Color(0xFFDAA520), fontWeight = FontWeight.Black, fontSize = 11.sp)
+                            Button(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:${agente.email}")
+                                        putExtra(Intent.EXTRA_SUBJECT, "Fichaje para la liga $nombreLiga")
+                                    }
+                                    context.startActivity(intent)
+                                },
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                            ) {
+                                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Contactar", fontSize = 12.sp)
                             }
                         }
                     }

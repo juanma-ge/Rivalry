@@ -111,7 +111,7 @@ class LigaViewModel : ViewModel() {
     private val _miembrosLiga = MutableStateFlow<List<MiembroUI>>(emptyList())
     val miembrosLiga: StateFlow<List<MiembroUI>> = _miembrosLiga.asStateFlow()
 
-    fun cargarMiembros(ids: List<String>, creadorId: String?) {
+    fun cargarMiembros(ids: List<String>, creadorId: String, nombresEquipos: Map<String, String>) {
         if (ids.isEmpty()) {
             _miembrosLiga.value = emptyList()
             return
@@ -121,12 +121,15 @@ class LigaViewModel : ViewModel() {
             .whereIn(com.google.firebase.firestore.FieldPath.documentId(), ids)
             .get()
             .addOnSuccessListener { snapshot ->
-                val listaConRoles = snapshot.documents.mapNotNull { doc ->
-                    val id = doc.id
-                    val nombre = doc.getString("nombre") ?: doc.getString("nombreUsuario") ?: "Usuario"
-                    MiembroUI(id = id, nombre = nombre, esAdmin = id == creadorId)
+                val lista = snapshot.documents.mapNotNull { doc ->
+                    val nombre = doc.getString("nombre") ?: doc.getString("nombreUsuario") ?: "Jugador"
+                    val esAdmin = doc.id == creadorId
+
+                    val nombreEquipo = nombresEquipos[doc.id] ?: "Equipo de $nombre"
+
+                    MiembroUI(doc.id, nombre, esAdmin, nombreEquipo)
                 }
-                _miembrosLiga.value = listaConRoles
+                _miembrosLiga.value = lista
             }
             .addOnFailureListener {
                 _miembrosLiga.value = emptyList()
@@ -155,15 +158,16 @@ class LigaViewModel : ViewModel() {
         _miembrosLiga.value = emptyList()
     }
 
-    fun unirseALiga(ligaId: String) {
+    fun unirseALiga(ligaId: String, nombreEquipo: String) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
+        val updates = mapOf(
+            "idsMiembros" to com.google.firebase.firestore.FieldValue.arrayUnion(userId),
+            "nombresEquipos.$userId" to nombreEquipo
+        )
+
         FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
-            .update("idsMiembros", FieldValue.arrayUnion(userId))
-            .addOnSuccessListener {
-            }
-            .addOnFailureListener {
-            }
+            .update(updates)
     }
 
     fun salirDeLiga(ligaId: String, onVolver: () -> Unit) {
@@ -197,6 +201,41 @@ class LigaViewModel : ViewModel() {
                 onVolver()
             }
         }
+    }
+
+    private val _agentesLibres = MutableStateFlow<List<AgenteLibreUI>>(emptyList())
+    val agentesLibres: StateFlow<List<AgenteLibreUI>> = _agentesLibres.asStateFlow()
+
+    fun cargarAgentesLibres(ids: List<String>) {
+        if (ids.isEmpty()) {
+            _agentesLibres.value = emptyList()
+            return
+        }
+
+        FirebaseFirestore.getInstance().collection("usuarios")
+            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), ids)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val lista = snapshot.documents.mapNotNull { doc ->
+                    val id = doc.id
+                    val nombre = doc.getString("nombre") ?: doc.getString("nombreUsuario") ?: "Jugador"
+                    val email = doc.getString("email") ?: doc.getString("correo") ?: "correo@ejemplo.com"
+                    AgenteLibreUI(id, nombre, email)
+                }
+                _agentesLibres.value = lista
+            }
+    }
+
+    fun apuntarseComoAgenteLibre(ligaId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
+            .update("idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayUnion(userId))
+    }
+
+    fun salirDeAgentesLibres(ligaId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
+            .update("idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayRemove(userId))
     }
 
 }

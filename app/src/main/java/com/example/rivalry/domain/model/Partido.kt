@@ -12,5 +12,12 @@ data class Partido(
     val probabilidadVictoriaLocal: String = "",
     val provincia: String = "",
     val ciudad: String = "",
-    val ubicacion: String = ""
+    val ubicacion: String = "",
+    val jornada: Int = 1,
+    val nombreLocal: String = "",
+    val nombreVisitante: String = "",
+    val golesLocal: Int = 0,
+    val golesVisitante: Int = 0,
+    val estado: String = "PENDIENTE", // Puede ser: "PENDIENTE", "FINALIZADO"
+    val goleadores: Map<String, Int> = emptyMap()
 )

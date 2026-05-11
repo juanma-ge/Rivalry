@@ -3,6 +3,8 @@ package com.example.rivalry.presentation.auth
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,7 +20,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.auth.home.SeccionPartidos
 import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.material.icons.filled.Search
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,11 +36,12 @@ fun PantallaHome(
     val misLigas by viewModel.misLigas.collectAsState()
     val ligasExplorar by viewModel.ligasExplorar.collectAsState()
 
-    var pestaniaSeleccionada by remember { mutableStateOf(0) }
     val titulosPestanias = listOf("Mis ligas", "Explorar")
 
-    var navSeleccionada by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { titulosPestanias.size })
+    val coroutineScope = rememberCoroutineScope()
 
+    var navSeleccionada by remember { mutableStateOf(0) }
     var busquedaLiga by remember { mutableStateOf("") }
 
     Scaffold(
@@ -61,11 +64,14 @@ fun PantallaHome(
                 )
 
                 if (navSeleccionada == 0) {
-                    TabRow(selectedTabIndex = pestaniaSeleccionada) {
+                    TabRow(selectedTabIndex = pagerState.currentPage) {
                         titulosPestanias.forEachIndexed { index, titulo ->
                             Tab(
-                                selected = pestaniaSeleccionada == index,
-                                onClick = { pestaniaSeleccionada = index },
+                                selected = pagerState.currentPage == index,
+                                onClick = {
+                                    // Al tocar la palabra, hace scroll automático
+                                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                                },
                                 text = { Text(titulo, fontSize = 16.sp) }
                             )
                         }
@@ -127,77 +133,83 @@ fun PantallaHome(
         ) {
             when (navSeleccionada) {
                 0 -> {
-                    if (pestaniaSeleccionada == 0) {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            item {
-                                Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
-                            }
-                            items(misLigas) { liga ->
-                                ItemLiga(
-                                    nombre = liga.nombre,
-                                    deporte = liga.deporte,
-                                    participantes = liga.idsMiembros.size,
-                                    maxParticipantes = liga.maxParticipantes,
-                                    esPublica = liga.esPublica,
-                                    onClick = {
-                                        if (liga.id.isNotBlank()) {
-                                            onNavegarADetalleLiga(liga.id)
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    } else {
-                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                            OutlinedTextField(
-                                value = busquedaLiga,
-                                onValueChange = { busquedaLiga = it },
-                                label = { Text("Buscar liga por nombre, ciudad o provincia") },
-                                modifier = Modifier.fillMaxWidth(),
-                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-                                singleLine = true
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
+                    // 👇 AQUÍ ENTRA EN ACCIÓN EL PAGER DESLIZABLE 👇
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        if (page == 0) {
                             LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                val ligasFiltradas = if (busquedaLiga.isBlank()) {
-                                    ligasExplorar
-                                } else {
-                                    ligasExplorar.filter {
-                                        it.ciudad.contains(busquedaLiga, ignoreCase = true) ||
-                                                it.provincia.contains(busquedaLiga, ignoreCase = true) ||
-                                                it.nombre.contains(busquedaLiga, ignoreCase = true)
-                                    }
+                                item {
+                                    Text("Tus competiciones activas", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                                 }
-
-                                if (ligasFiltradas.isEmpty()) {
-                                    item {
-                                        Text(
-                                            "No hay ligas disponibles en '${busquedaLiga}'.",
-                                            color = Color.Gray,
-                                            modifier = Modifier.padding(top = 16.dp)
-                                        )
-                                    }
-                                } else {
-                                    items(ligasFiltradas) { liga ->
-                                        ItemLiga(
-                                            nombre = liga.nombre,
-                                            deporte = liga.deporte,
-                                            participantes = liga.idsMiembros.size,
-                                            maxParticipantes = liga.maxParticipantes,
-                                            esPublica = liga.esPublica,
-                                            onClick = {
-                                                if (liga.id.isNotBlank()) {
-                                                    onNavegarADetalleLiga(liga.id)
-                                                }
+                                items(misLigas) { liga ->
+                                    ItemLiga(
+                                        nombre = liga.nombre,
+                                        deporte = liga.deporte,
+                                        participantes = liga.idsMiembros.size,
+                                        maxParticipantes = liga.maxParticipantes,
+                                        esPublica = liga.esPublica,
+                                        onClick = {
+                                            if (liga.id.isNotBlank()) {
+                                                onNavegarADetalleLiga(liga.id)
                                             }
-                                        )
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                                OutlinedTextField(
+                                    value = busquedaLiga,
+                                    onValueChange = { busquedaLiga = it },
+                                    label = { Text("Buscar liga por nombre, ciudad o provincia") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                                    singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    val ligasFiltradas = if (busquedaLiga.isBlank()) {
+                                        ligasExplorar
+                                    } else {
+                                        ligasExplorar.filter {
+                                            it.ciudad.contains(busquedaLiga, ignoreCase = true) ||
+                                                    it.provincia.contains(busquedaLiga, ignoreCase = true) ||
+                                                    it.nombre.contains(busquedaLiga, ignoreCase = true)
+                                        }
+                                    }
+
+                                    if (ligasFiltradas.isEmpty()) {
+                                        item {
+                                            Text(
+                                                "No hay ligas disponibles en '${busquedaLiga}'.",
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(top = 16.dp)
+                                            )
+                                        }
+                                    } else {
+                                        items(ligasFiltradas) { liga ->
+                                            ItemLiga(
+                                                nombre = liga.nombre,
+                                                deporte = liga.deporte,
+                                                participantes = liga.idsMiembros.size,
+                                                maxParticipantes = liga.maxParticipantes,
+                                                esPublica = liga.esPublica,
+                                                onClick = {
+                                                    if (liga.id.isNotBlank()) {
+                                                        onNavegarADetalleLiga(liga.id)
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

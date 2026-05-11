@@ -10,10 +10,10 @@ import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
+import com.example.rivalry.presentation.auth.home.PantallaDetalleLiga
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.home.PantallaCrearLiga
 import com.example.rivalry.presentation.home.PantallaCrearPartido
-import com.example.rivalry.presentation.home.PantallaDetalleLiga
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -77,6 +77,15 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
             )
         }
 
+        composable("crear_partido") {
+            val partidoViewModel: PartidoSueltoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+            PantallaCrearPartido(
+                viewModel = partidoViewModel,
+                onVolver = { navController.popBackStack() },
+                onPartidoCreado = { navController.popBackStack() }
+            )
+        }
+
         composable("detalle_liga/{ligaId}") { backStackEntry ->
             val ligaId = backStackEntry.arguments?.getString("ligaId") ?: ""
             val ligaViewModel: LigaViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -84,18 +93,10 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
             PantallaDetalleLiga(
                 ligaId = ligaId,
                 viewModel = ligaViewModel,
-                onVolver = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable("crear_partido") {
-            val partidoViewModel: PartidoSueltoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-            PantallaCrearPartido(
-                viewModel = partidoViewModel,
                 onVolver = { navController.popBackStack() },
-                onPartidoCreado = { navController.popBackStack() }
+                onNavegarAChat = { idSala, nombreSala ->
+                    navController.navigate("chat/$idSala/$nombreSala")
+                }
             )
         }
 

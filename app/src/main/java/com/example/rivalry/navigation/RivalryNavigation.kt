@@ -93,10 +93,7 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
             PantallaDetalleLiga(
                 ligaId = ligaId,
                 viewModel = ligaViewModel,
-                onVolver = { navController.popBackStack() },
-                onNavegarAChat = { idSala, nombreSala ->
-                    navController.navigate("chat/$idSala/$nombreSala")
-                }
+                onVolver = { navController.popBackStack() }
             )
         }
 

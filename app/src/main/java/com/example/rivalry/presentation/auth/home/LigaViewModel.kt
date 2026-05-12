@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.rivalry.domain.model.Deporte
 import com.example.rivalry.domain.model.Liga
 import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.domain.model.Partido
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.firestore.FieldValue
+import kotlin.collections.filter
 
 class LigaViewModel : ViewModel() {
 
@@ -236,6 +238,52 @@ class LigaViewModel : ViewModel() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
             .update("idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayRemove(userId))
+    }
+
+    private val _partidosLiga = MutableStateFlow<List<Partido>>(emptyList())
+    val partidosLiga: StateFlow<List<Partido>> = _partidosLiga.asStateFlow()
+
+    fun crearPartido(partido: Partido) {
+        val db = FirebaseFirestore.getInstance()
+        val ref = db.collection("partidos").document()
+        val partidoConId = partido.copy(id = ref.id)
+
+        ref.set(partidoConId).addOnSuccessListener {
+            cargarPartidosLiga(partido.idLiga)
+        }
+    }
+
+    fun cargarPartidosLiga(ligaId: String) {
+        FirebaseFirestore.getInstance().collection("partidos")
+            .whereEqualTo("idLiga", ligaId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+
+                val lista = snapshot?.documents?.mapNotNull { it.toObject(Partido::class.java) } ?: emptyList()
+                _partidosLiga.value = lista.sortedBy { it.jornada }
+            }
+    }
+
+    fun finalizarPartido(partidoId: String, gLocal: Int, gVisitante: Int, goleadores: Map<String, Int>) {
+        val updates = mapOf(
+            "golesLocal" to gLocal,
+            "golesVisitante" to gVisitante,
+            "goleadores" to goleadores,
+            "estado" to "FINALIZADO"
+        )
+        FirebaseFirestore.getInstance().collection("partidos").document(partidoId).update(updates)
+    }
+
+    fun calcularPuntos(equipoId: String, partidos: List<Partido>): Int {
+        var puntos = 0
+        partidos.filter { it.estado == "FINALIZADO" }.forEach { p ->
+            when {
+                p.idLocal == equipoId && p.golesLocal > p.golesVisitante -> puntos += 3
+                p.idVisitante == equipoId && p.golesVisitante > p.golesLocal -> puntos += 3
+                (p.idLocal == equipoId || p.idVisitante == equipoId) && p.golesLocal == p.golesVisitante -> puntos += 1
+            }
+        }
+        return puntos
     }
 
 }

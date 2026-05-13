@@ -6,6 +6,5 @@ enum class Deporte(val nombreVisual: String) {
     FUTBOL_SALA("Fútbol Sala"),
     FUTBOL_PLAYA("Fútbol Playa"),
     BALONCESTO("Baloncesto"),
-    PADEL("Pádel"),
     OTRO("Otro")
 }

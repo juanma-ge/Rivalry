@@ -105,13 +105,30 @@ fun PantallaDetalleLiga(
 
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
                 when (page) {
-                    0 -> PestaniaPartidos(
-                        partidos = partidosLista,
-                        esAdmin = esAdmin,
-                        onAbrirFormulario = {
-                            println("Click en crear partido")
+                    0 -> {
+                        if (partidosLista.isEmpty() && esAdmin) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text("Aún no hay calendario.", color = Color.Gray)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = { viewModel.generarCalendario(ligaId, miembrosLista) },
+                                    modifier = Modifier.fillMaxWidth(0.8f).height(50.dp)
+                                ) {
+                                    Text("Generar Calendario Automático", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        } else {
+                            PestaniaPartidos(
+                                partidos = partidosLista,
+                                esAdmin = esAdmin,
+                                onAbrirFormulario = { println("Click en crear partido") }
+                            )
                         }
-                    )
+                    }
                     1 -> Text("Aquí irá la tabla de clasificación.", modifier = Modifier.padding(16.dp))
                     2 -> Text("Información general y normas.", modifier = Modifier.padding(16.dp))
                     3 -> PestaniaEquipos(liga, miembrosLista)
@@ -134,6 +151,16 @@ fun PantallaDetalleLiga(
                 text = {
                     if (pasoDialogo == 1) {
                         Column {
+                            if (liga?.estado == "EN_JUEGO") {
+                                Text(
+                                    text = "⚠️ La liga ya ha empezado. Podrás unirte y usar el chat, pero no jugarás hasta la próxima temporada.",
+                                    color = Color.Red,
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+
                             Button(onClick = { pasoDialogo = 2 }, Modifier.fillMaxWidth()) { Text("Ser Capitán (Inscribir Equipo)") }
                             OutlinedButton(onClick = { viewModel.apuntarseComoAgenteLibre(ligaId); mostrarDialogoUnirse = false }, Modifier.fillMaxWidth()) { Text("Ser Agente (Busco Equipo)") }
                         }

@@ -116,7 +116,7 @@ fun PantallaCrearLiga(viewModel: LigaViewModel, onVolver: () -> Unit, onLigaCrea
                     value = maxParticipantes,
                     onValueChange = { maxParticipantes = it },
                     valueRange = 4f..20f,
-                    steps = 15 // Para que salte de 1 en 1
+                    steps = 15
                 )
             }
 

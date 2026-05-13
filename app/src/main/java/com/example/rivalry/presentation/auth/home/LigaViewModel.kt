@@ -286,4 +286,56 @@ class LigaViewModel : ViewModel() {
         return puntos
     }
 
+    fun generarCalendario(ligaId: String, miembros: List<MiembroUI>) {
+        if (miembros.size < 2) return
+
+        val equipos = miembros.toMutableList()
+        if (equipos.size % 2 != 0) {
+            equipos.add(MiembroUI("DESCANSA", "Descansa", false, "Descansa"))
+        }
+
+        val numRondas = equipos.size - 1
+        val mitad = equipos.size / 2
+        val partidosNuevos = mutableListOf<Partido>()
+
+        for (ronda in 0 until numRondas) {
+            for (i in 0 until mitad) {
+                val local = equipos[i]
+                val visitante = equipos[equipos.size - 1 - i]
+
+                if (local.id != "DESCANSA" && visitante.id != "DESCANSA") {
+                    partidosNuevos.add(
+                        Partido(
+                            idLiga = ligaId,
+                            jornada = ronda + 1,
+                            idLocal = local.id,
+                            idVisitante = visitante.id,
+                            nombreLocal = local.nombreEquipo,
+                            nombreVisitante = visitante.nombreEquipo,
+                            estado = "PENDIENTE"
+                        )
+                    )
+                }
+            }
+            val ultimo = equipos.removeAt(equipos.size - 1)
+            equipos.add(1, ultimo)
+        }
+
+        val db = FirebaseFirestore.getInstance()
+        val batch = db.batch()
+
+        partidosNuevos.forEach { partido ->
+            val ref = db.collection("partidos").document()
+            batch.set(ref, partido.copy(id = ref.id))
+        }
+
+        val ligaRef = db.collection("ligas").document(ligaId)
+        batch.update(ligaRef, "estado", "EN_JUEGO")
+
+        batch.commit().addOnSuccessListener {
+            println("¡Calendario generado con éxito!")
+            cargarPartidosLiga(ligaId)
+        }
+    }
+
 }

@@ -2,6 +2,8 @@ package com.example.rivalry.presentation.auth.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,8 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.rivalry.domain.model.Partido
+import com.example.rivalry.domain.model.MiembroUI
 import com.example.rivalry.presentation.auth.chat.ChatIntegrado
 import com.example.rivalry.presentation.auth.chat.ChatViewModel
 import com.example.rivalry.presentation.auth.chat.PestaniaEquipos
@@ -50,6 +55,9 @@ fun PantallaDetalleLiga(
     var mostrarDialogoUnirse by remember { mutableStateOf(false) }
     var pasoDialogo by remember { mutableStateOf(1) }
     var nombreEquipoInput by remember { mutableStateOf("") }
+    var partidoSeleccionadoParaResultado by remember { mutableStateOf<Partido?>(null) }
+    var golesLocalInput by remember { mutableStateOf("0") }
+    var golesVisitanteInput by remember { mutableStateOf("0") }
 
     LaunchedEffect(ligaId) {
         viewModel.cargarDetalleLiga(ligaId)
@@ -125,11 +133,18 @@ fun PantallaDetalleLiga(
                             PestaniaPartidos(
                                 partidos = partidosLista,
                                 esAdmin = esAdmin,
-                                onAbrirFormulario = { println("Click en crear partido") }
+                                onAbrirFormulario = { },
+                                onPartidoClick = { partido ->
+                                    if (esAdmin && partido.estado == "PENDIENTE") {
+                                        partidoSeleccionadoParaResultado = partido
+                                        golesLocalInput = "0"
+                                        golesVisitanteInput = "0"
+                                    }
+                                }
                             )
                         }
                     }
-                    1 -> Text("Aquí irá la tabla de clasificación.", modifier = Modifier.padding(16.dp))
+                    1 -> PestaniaClasificacion(miembros = miembrosLista, partidos = partidosLista)
                     2 -> Text("Información general y normas.", modifier = Modifier.padding(16.dp))
                     3 -> PestaniaEquipos(liga, miembrosLista)
                     4 -> PestaniaFichajes(agentesLista, liga?.nombre ?: "")
@@ -177,6 +192,53 @@ fun PantallaDetalleLiga(
                             }
                         }) { Text("Confirmar") }
                     }
+                }
+            )
+        }
+
+        // DIÁLOGO PARA GUARDAR RESULTADOS
+        if (partidoSeleccionadoParaResultado != null) {
+            AlertDialog(
+                onDismissRequest = { partidoSeleccionadoParaResultado = null },
+                title = { Text("Finalizar Partido", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Introduce el resultado final", fontSize = 14.sp, color = Color.Gray)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                                Text(partidoSeleccionadoParaResultado!!.nombreLocal, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                                OutlinedTextField(
+                                    value = golesLocalInput,
+                                    onValueChange = { if (it.all { c -> c.isDigit() }) golesLocalInput = it },
+                                    modifier = Modifier.width(60.dp)
+                                )
+                            }
+                            Text("-", fontSize = 24.sp, modifier = Modifier.padding(horizontal = 8.dp))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                                Text(partidoSeleccionadoParaResultado!!.nombreVisitante, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                                OutlinedTextField(
+                                    value = golesVisitanteInput,
+                                    onValueChange = { if (it.all { c -> c.isDigit() }) golesVisitanteInput = it },
+                                    modifier = Modifier.width(60.dp)
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        viewModel.finalizarPartido(
+                            partidoId = partidoSeleccionadoParaResultado!!.id,
+                            golesL = golesLocalInput.toIntOrNull() ?: 0,
+                            golesV = golesVisitanteInput.toIntOrNull() ?: 0,
+                            goleadoresMapa = emptyMap()
+                        )
+                        partidoSeleccionadoParaResultado = null
+                    }) { Text("Guardar Resultado") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { partidoSeleccionadoParaResultado = null }) { Text("Cancelar") }
                 }
             )
         }

@@ -1,11 +1,13 @@
 package com.example.rivalry.presentation.auth.chat
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
+import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +22,8 @@ import com.example.rivalry.domain.model.Partido
 fun PestaniaPartidos(
     partidos: List<Partido>,
     esAdmin: Boolean,
-    onAbrirFormulario: () -> Unit
+    onAbrirFormulario: () -> Unit,
+    onPartidoClick: (Partido) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -39,7 +42,10 @@ fun PestaniaPartidos(
             ) {
                 items(partidos) { partido ->
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .clickable { onPartidoClick(partido)},
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Column(

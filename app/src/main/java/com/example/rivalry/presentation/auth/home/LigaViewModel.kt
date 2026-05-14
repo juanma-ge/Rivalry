@@ -3,6 +3,7 @@ package com.example.rivalry.presentation.auth.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rivalry.domain.model.Deporte
+import com.example.rivalry.domain.model.Goleador
 import com.example.rivalry.domain.model.Liga
 import com.example.rivalry.domain.model.MiembroUI
 import com.example.rivalry.domain.model.Partido
@@ -264,14 +265,20 @@ class LigaViewModel : ViewModel() {
             }
     }
 
-    fun finalizarPartido(partidoId: String, gLocal: Int, gVisitante: Int, goleadores: Map<String, Int>) {
-        val updates = mapOf(
-            "golesLocal" to gLocal,
-            "golesVisitante" to gVisitante,
-            "goleadores" to goleadores,
-            "estado" to "FINALIZADO"
-        )
-        FirebaseFirestore.getInstance().collection("partidos").document(partidoId).update(updates)
+    fun finalizarPartido(partidoId: String, golesL: Int, golesV: Int, goleadoresMapa: Map<String, Int>) {
+        val db = FirebaseFirestore.getInstance()
+        val partidoRef = db.collection("partidos").document(partidoId)
+
+        partidoRef.update(
+            mapOf(
+                "golesLocal" to golesL,
+                "golesVisitante" to golesV,
+                "estado" to "FINALIZADO",
+                "goleadores" to goleadoresMapa
+            )
+        ).addOnSuccessListener {
+            println("Resultado guardado")
+        }
     }
 
     fun calcularPuntos(equipoId: String, partidos: List<Partido>): Int {

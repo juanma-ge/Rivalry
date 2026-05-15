@@ -19,6 +19,7 @@ import com.example.rivalry.presentation.auth.components.ItemLiga
 import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.auth.home.SeccionPartidos
+import com.example.rivalry.presentation.auth.home.SeccionPerfil
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -133,7 +134,6 @@ fun PantallaHome(
         ) {
             when (navSeleccionada) {
                 0 -> {
-                    // 👇 AQUÍ ENTRA EN ACCIÓN EL PAGER DESLIZABLE 👇
                     HorizontalPager(
                         state = pagerState,
                         modifier = Modifier.fillMaxSize()
@@ -232,29 +232,13 @@ fun PantallaHome(
                 }
 
                 3 -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(24.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(100.dp), tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Ajustes de Perfil", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        Text(FirebaseAuth.getInstance().currentUser?.email ?: "Usuario", color = Color.Gray)
-
-                        Spacer(modifier = Modifier.height(40.dp))
-
-                        Button(
-                            onClick = {
-                                FirebaseAuth.getInstance().signOut()
-                                onCerrarSesion()
-                            },
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                        ) {
-                            Text("Cerrar Sesión", color = Color.White, fontWeight = FontWeight.Bold)
+                    SeccionPerfil(
+                        ligas = misLigas,
+                        partidos = emptyList(),
+                        onLigaClick = { idLiga ->
+                            onNavegarADetalleLiga(idLiga)
                         }
-                    }
+                    )
                 }
             }
         }

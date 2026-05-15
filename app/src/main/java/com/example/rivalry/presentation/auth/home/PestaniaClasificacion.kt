@@ -13,15 +13,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.rivalry.domain.model.EquipoClasificacion
-import com.example.rivalry.domain.model.MiembroUI
 import com.example.rivalry.domain.model.Partido
+import com.example.rivalry.domain.model.MiembroUI
+
+data class EquipoClasificacion(
+    val nombre: String,
+    var puntos: Int = 0,
+    var jugados: Int = 0,
+    var victorias: Int = 0,
+    var empates: Int = 0,
+    var derrotas: Int = 0,
+    var golesFavor: Int = 0,
+    var golesContra: Int = 0
+) {
+    val diferenciaGoles: Int get() = golesFavor - golesContra
+}
 
 @Composable
-fun PestaniaClasificacion(
-    miembros: List<MiembroUI>,
-    partidos: List<com.example.rivalry.domain.model.Partido>
-) {
+fun PestaniaClasificacion(miembros: List<MiembroUI>, partidos: List<Partido>) {
     val tablaOrdenada = remember(miembros, partidos) {
         val mapaEquipos = mutableMapOf<String, EquipoClasificacion>()
 
@@ -43,20 +52,13 @@ fun PestaniaClasificacion(
 
                 when {
                     p.golesLocal > p.golesVisitante -> {
-                        local.puntos += 3
-                        local.victorias++
-                        visitante.derrotas++
+                        local.puntos += 3; local.victorias++; visitante.derrotas++
                     }
                     p.golesLocal < p.golesVisitante -> {
-                        visitante.puntos += 3
-                        visitante.victorias++
-                        local.derrotas++
+                        visitante.puntos += 3; visitante.victorias++; local.derrotas++
                     }
                     else -> {
-                        local.puntos += 1
-                        visitante.puntos += 1
-                        local.empates++
-                        visitante.empates++
+                        local.puntos += 1; visitante.puntos += 1; local.empates++; visitante.empates++
                     }
                 }
             }
@@ -88,7 +90,7 @@ fun PestaniaClasificacion(
         }
         HorizontalDivider()
 
-        androidx.compose.foundation.lazy.LazyColumn {
+        LazyColumn {
             itemsIndexed(tablaOrdenada) { index, equipo ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 4.dp),

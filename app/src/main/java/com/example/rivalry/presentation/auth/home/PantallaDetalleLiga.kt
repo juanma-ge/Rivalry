@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -71,6 +72,8 @@ fun PantallaDetalleLiga(
         }
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,7 +81,28 @@ fun PantallaDetalleLiga(
                 navigationIcon = {
                     IconButton(onClick = onVolver) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary, titleContentColor = Color.White, navigationIconContentColor = Color.White)
+                actions = {
+                    // BOTÓN PDF
+                    IconButton(onClick = {
+                        GeneradorPDF.generarYCompartir(
+                            context = context,
+                            nombreLiga = liga?.nombre ?: "Liga",
+                            miembros = miembrosLista,
+                            partidos = partidosLista
+                        )
+                    }) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Share,
+                            contentDescription = "Exportar PDF",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
             )
         }
     ) { padding ->

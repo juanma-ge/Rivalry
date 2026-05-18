@@ -15,12 +15,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 
 @Composable
 fun SeccionSocial(viewModel: SocialViewModel = viewModel()) {
     var codigoBusqueda by remember { mutableStateOf("") }
-
     val mensajeUI by viewModel.mensajeUI.collectAsState()
+
+    val solicitudes by viewModel.solicitudes.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Añadir Amigo", fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -61,9 +64,40 @@ fun SeccionSocial(viewModel: SocialViewModel = viewModel()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-        Divider(color = Color.LightGray.copy(alpha = 0.5f))
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
         Spacer(modifier = Modifier.height(16.dp))
+
+        if (solicitudes.isNotEmpty()) {
+            Text("Solicitudes Pendientes", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            solicitudes.forEach { solicitud ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("De: ${solicitud.nombreEmisor}", fontWeight = FontWeight.Bold)
+                        Row {
+                            IconButton(onClick = { viewModel.responderSolicitud(solicitud.idSolicitud, true) }) {
+                                Icon(Icons.Default.Check, contentDescription = "Aceptar", tint = Color(0xFF4CAF50))
+                            }
+                            IconButton(onClick = { viewModel.responderSolicitud(solicitud.idSolicitud, false) }) {
+                                Icon(Icons.Default.Close, contentDescription = "Rechazar", tint = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Text("Mensajes Directos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         Spacer(modifier = Modifier.height(16.dp))

@@ -1,6 +1,7 @@
 package com.example.rivalry.presentation.auth.home
 
 import androidx.lifecycle.ViewModel
+import com.example.rivalry.domain.model.SolicitudUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,46 @@ class SocialViewModel : ViewModel() {
 
     private val _mensajeUI = MutableStateFlow<String?>(null)
     val mensajeUI: StateFlow<String?> = _mensajeUI
+
+    private val _solicitudes = MutableStateFlow<List<SolicitudUI>>(emptyList())
+    val solicitudes: StateFlow<List<SolicitudUI>> = _solicitudes
+
+    init {
+        cargarSolicitudesPendientes()
+    }
+
+    private fun cargarSolicitudesPendientes() {
+        val miId = auth.currentUser?.uid ?: return
+
+        db.collection("solicitudes")
+            .whereEqualTo("idReceptor", miId)
+            .whereEqualTo("estado", "PENDIENTE")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+
+                val documentos = snapshot.documents
+                if (documentos.isEmpty()) {
+                    _solicitudes.value = emptyList()
+                    return@addSnapshotListener
+                }
+
+                val solicitudesTemporales = mutableListOf<SolicitudUI>()
+
+                documentos.forEach { doc ->
+                    val idEmisor = doc.getString("idEmisor") ?: return@forEach
+                    val idSolicitud = doc.id
+
+                    db.collection("usuarios").document(idEmisor).get()
+                        .addOnSuccessListener { userDoc ->
+                            val nombre = userDoc.getString("apodo") ?: userDoc.getString("nombre") ?: "Usuario"
+                            solicitudesTemporales.add(SolicitudUI(idSolicitud, idEmisor, nombre))
+
+                            // Actualizamos la UI
+                            _solicitudes.value = solicitudesTemporales.toList()
+                        }
+                }
+            }
+    }
 
     fun buscarYEnviarSolicitud(codigoBusqueda: String) {
         val miId = auth.currentUser?.uid ?: return
@@ -59,6 +100,15 @@ class SocialViewModel : ViewModel() {
             }
             .addOnFailureListener {
                 _mensajeUI.value = "Error de conexión al buscar."
+            }
+    }
+
+    fun responderSolicitud(idSolicitud: String, aceptar: Boolean) {
+        val estadoNuevo = if (aceptar) "ACEPTADA" else "RECHAZADA"
+
+        db.collection("solicitudes").document(idSolicitud)
+            .update("estado", estadoNuevo)
+            .addOnSuccessListener {
             }
     }
 

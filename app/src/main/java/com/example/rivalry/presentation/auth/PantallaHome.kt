@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -20,7 +19,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.auth.home.SeccionPartidos
 import com.example.rivalry.presentation.auth.home.SeccionPerfil
-import com.google.firebase.auth.FirebaseAuth
+import com.example.rivalry.presentation.auth.home.SeccionSocial
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,10 +52,19 @@ fun PantallaHome(
                         val titulo = when(navSeleccionada) {
                             0 -> "RIVALRY LIGAS"
                             1 -> "PARTIDOS"
-                            2 -> "AVISOS"
+                            2 -> "MENSAJES"
                             else -> "MI PERFIL"
                         }
                         Text(titulo, fontWeight = FontWeight.Bold)
+                    },
+                    actions = {
+                        IconButton(onClick = { /* TODO: Pantalla de Notificaciones */ }) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Avisos",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -70,7 +78,6 @@ fun PantallaHome(
                             Tab(
                                 selected = pagerState.currentPage == index,
                                 onClick = {
-                                    // Al tocar la palabra, hace scroll automático
                                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
                                 },
                                 text = { Text(titulo, fontSize = 16.sp) }
@@ -95,8 +102,8 @@ fun PantallaHome(
                     onClick = { navSeleccionada = 1 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Notifications, contentDescription = "Avisos") },
-                    label = { Text("Avisos") },
+                    icon = { Icon(Icons.Default.Email, contentDescription = "Mensajes") }, // NUEVO ICONO SOCIAL
+                    label = { Text("Mensajes") },
                     selected = navSeleccionada == 2,
                     onClick = { navSeleccionada = 2 }
                 )
@@ -222,13 +229,7 @@ fun PantallaHome(
                 }
 
                 2 -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("No tienes notificaciones nuevas", color = Color.Gray)
-                    }
+                    SeccionSocial()
                 }
 
                 3 -> {

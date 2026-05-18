@@ -29,11 +29,14 @@ class PerfilViewModel : ViewModel() {
 
     fun guardarPerfil(apodo: String, posicion: String, dorsal: String, bio: String) {
         val userId = auth.currentUser?.uid ?: return
+        val codigoAmigo = "RIV-${userId.take(5).uppercase()}"
+
         val datosUsuario = mapOf(
             "apodo" to apodo,
             "posicion" to posicion,
             "dorsal" to dorsal,
-            "bio" to bio
+            "bio" to bio,
+            "codigoAmigo" to codigoAmigo
         )
 
         db.collection("usuarios").document(userId)

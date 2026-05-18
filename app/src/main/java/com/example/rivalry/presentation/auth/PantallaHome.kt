@@ -235,9 +235,12 @@ fun PantallaHome(
                 }
 
                 3 -> {
+                    val misPartidosFinalizadosLiga = partidosLiga.filter { it.terminado || it.estado == "FINALIZADO" }
+                    val misPachangas = misPartidosSueltos
+
                     SeccionPerfil(
                         ligas = misLigas,
-                        partidos = emptyList(),
+                        partidos = misPartidosFinalizadosLiga,
                         onLigaClick = { idLiga ->
                             onNavegarADetalleLiga(idLiga)
                         }

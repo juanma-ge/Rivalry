@@ -125,9 +125,12 @@ class LigaViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { snapshot ->
                 val lista = snapshot.documents.mapNotNull { doc ->
-                    val nombre = doc.getString("nombre") ?: doc.getString("nombreUsuario") ?: "Jugador"
-                    val esAdmin = doc.id == creadorId
+                    val nombre = doc.getString("apodo")
+                        ?: doc.getString("nombreUsuario")
+                        ?: doc.getString("nombre")
+                        ?: "Jugador"
 
+                    val esAdmin = doc.id == creadorId
                     val nombreEquipo = nombresEquipos[doc.id] ?: "Equipo de $nombre"
 
                     MiembroUI(doc.id, nombre, esAdmin, nombreEquipo)
@@ -171,6 +174,21 @@ class LigaViewModel : ViewModel() {
 
         FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
             .update(updates)
+    }
+
+    fun ficharAgenteLibre(ligaId: String, agenteId: String, nombreEquipo: String) {
+        val db = FirebaseFirestore.getInstance()
+        val ligaRef = db.collection("ligas").document(ligaId)
+
+        val actualizaciones = mapOf(
+            "idsAgentesLibres" to FieldValue.arrayRemove(agenteId),
+            "idsMiembros" to FieldValue.arrayUnion(agenteId),
+            "nombresEquipos.$agenteId" to nombreEquipo
+        )
+
+        ligaRef.update(actualizaciones).addOnSuccessListener {
+            println("¡Jugador fichado con éxito por el equipo $nombreEquipo!")
+        }
     }
 
     fun salirDeLiga(ligaId: String, onVolver: () -> Unit) {
@@ -221,7 +239,7 @@ class LigaViewModel : ViewModel() {
             .addOnSuccessListener { snapshot ->
                 val lista = snapshot.documents.mapNotNull { doc ->
                     val id = doc.id
-                    val nombre = doc.getString("nombre") ?: doc.getString("nombreUsuario") ?: "Jugador"
+                    val nombre = doc.getString("apodo") ?: doc.getString("nombre") ?: "Jugador"
                     val email = doc.getString("email") ?: doc.getString("correo") ?: "correo@ejemplo.com"
                     AgenteLibreUI(id, nombre, email)
                 }
@@ -342,6 +360,47 @@ class LigaViewModel : ViewModel() {
         batch.commit().addOnSuccessListener {
             println("¡Calendario generado con éxito!")
             cargarPartidosLiga(ligaId)
+        }
+    }
+
+    fun cambiarNombreEquipo(ligaId: String, equipoId: String, nuevoNombre: String) {
+        val db = FirebaseFirestore.getInstance()
+        val ligaRef = db.collection("ligas").document(ligaId)
+
+        // 1. Cambiamos el nombre en la liga
+        ligaRef.update("nombresEquipos.$equipoId", nuevoNombre).addOnSuccessListener {
+
+            // 2. Buscamos TODOS los partidos de esa liga
+            db.collection("partidos")
+                .whereEqualTo("idLiga", ligaId)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val batch = db.batch()
+                    var partidosModificados = 0
+
+                    for (doc in snapshot.documents) {
+                        val idLocal = doc.getString("idLocal")
+                        val idVisitante = doc.getString("idVisitante")
+
+                        // Si encuentra tu equipo, lo actualiza a la fuerza
+                        if (idLocal == equipoId) {
+                            batch.update(doc.reference, "nombreLocal", nuevoNombre)
+                            partidosModificados++
+                        }
+                        if (idVisitante == equipoId) {
+                            batch.update(doc.reference, "nombreVisitante", nuevoNombre)
+                            partidosModificados++
+                        }
+                    }
+
+                    // 3. Ejecutamos los cambios
+                    if (partidosModificados > 0) {
+                        batch.commit().addOnSuccessListener {
+                            println("¡Forzado! $partidosModificados partidos actualizados.")
+                            cargarPartidosLiga(ligaId)
+                        }
+                    }
+                }
         }
     }
 

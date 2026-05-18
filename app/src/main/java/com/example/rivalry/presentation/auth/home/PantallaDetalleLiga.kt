@@ -2,8 +2,6 @@ package com.example.rivalry.presentation.auth.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Partido
-import com.example.rivalry.domain.model.MiembroUI
 import com.example.rivalry.presentation.auth.chat.ChatIntegrado
 import com.example.rivalry.presentation.auth.chat.ChatViewModel
 import com.example.rivalry.presentation.auth.chat.PestaniaEquipos
@@ -60,6 +57,10 @@ fun PantallaDetalleLiga(
     var golesLocalInput by remember { mutableStateOf("0") }
     var golesVisitanteInput by remember { mutableStateOf("0") }
 
+    val agentesLibresUI by viewModel.agentesLibres.collectAsState()
+    val ligaActual by viewModel.ligaSeleccionada.collectAsState()
+    val miUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+
     LaunchedEffect(ligaId) {
         viewModel.cargarDetalleLiga(ligaId)
         viewModel.cargarPartidosLiga(ligaId)
@@ -68,6 +69,12 @@ fun PantallaDetalleLiga(
     LaunchedEffect(liga) {
         liga?.let {
             viewModel.cargarMiembros(it.idsMiembros, it.creadorId, it.nombresEquipos)
+            viewModel.cargarAgentesLibres(it.idsAgentesLibres)
+        }
+    }
+
+    LaunchedEffect(ligaActual) {
+        ligaActual?.let {
             viewModel.cargarAgentesLibres(it.idsAgentesLibres)
         }
     }
@@ -170,9 +177,26 @@ fun PantallaDetalleLiga(
                     }
                     1 -> PestaniaClasificacion(miembros = miembrosLista, partidos = partidosLista)
                     2 -> Text("Información general y normas.", modifier = Modifier.padding(16.dp))
-                    3 -> PestaniaEquipos(liga, miembrosLista)
-                    4 -> PestaniaFichajes(agentesLista, liga?.nombre ?: "")
-                    5 -> if (estoyApuntado) {
+                    3 -> PestaniaEquipos(
+                        liga = liga,
+                        miembros = miembrosLista,
+                        miId = miId,
+                        esAdmin = esAdmin,
+                        onCambiarNombre = { idEquipo, nuevoNombre ->
+                            viewModel.cambiarNombreEquipo(ligaId, idEquipo, nuevoNombre)
+                        }
+                    )
+                    4 -> PestaniaFichajes(
+                        agentesLibres = agentesLista,
+                        esCapitan = estoyApuntado,
+                        onFicharJugador = { idAgente, nombreEquipo ->
+                            viewModel.ficharAgenteLibre(
+                                ligaId = ligaId,
+                                agenteId = idAgente,
+                                nombreEquipo = nombreEquipo
+                            )
+                        }
+                    )                    5 -> if (estoyApuntado) {
                         ChatIntegrado(ligaId, chatViewModel, miId)
                     } else {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

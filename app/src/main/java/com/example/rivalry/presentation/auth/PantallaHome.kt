@@ -43,6 +43,9 @@ fun PantallaHome(
 
     var navSeleccionada by remember { mutableStateOf(0) }
     var busquedaLiga by remember { mutableStateOf("") }
+    val partidosLiga by partidoViewModel.partidosLiga.collectAsState()
+    val misPartidosSueltos by partidoViewModel.misPartidosSueltos.collectAsState()
+    val partidosExplorar by partidoViewModel.partidosExplorar.collectAsState()
 
     Scaffold(
         topBar = {
@@ -56,15 +59,6 @@ fun PantallaHome(
                             else -> "MI PERFIL"
                         }
                         Text(titulo, fontWeight = FontWeight.Bold)
-                    },
-                    actions = {
-                        IconButton(onClick = { /* TODO: Pantalla de Notificaciones */ }) {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Avisos",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -225,7 +219,15 @@ fun PantallaHome(
                 }
 
                 1 -> {
-                    SeccionPartidos(viewModel = partidoViewModel)
+                    SeccionPartidos(
+                        viewModel = partidoViewModel,
+                        partidosLiga = partidosLiga,
+                        misPartidosSueltos = misPartidosSueltos,
+                        partidosExplorar = partidosExplorar,
+                        onVerClasificacionClick = { idLiga ->
+                            onNavegarADetalleLiga(idLiga)
+                        }
+                    )
                 }
 
                 2 -> {

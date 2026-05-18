@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.example.rivalry.domain.model.Partido
 
 
 class PartidoSueltoViewModel : ViewModel() {
@@ -20,32 +21,60 @@ class PartidoSueltoViewModel : ViewModel() {
     private val _partidosExplorar = MutableStateFlow<List<PartidoSuelto>>(emptyList())
     val partidosExplorar: StateFlow<List<PartidoSuelto>> = _partidosExplorar
 
+    private val _misPartidosSueltos = MutableStateFlow<List<PartidoSuelto>>(emptyList())
+    val misPartidosSueltos: StateFlow<List<PartidoSuelto>> = _misPartidosSueltos
+
+    private val _partidosLiga = MutableStateFlow<List<Partido>>(emptyList())
+    val partidosLiga: StateFlow<List<Partido>> = _partidosLiga
+
     init {
-        obtenerPartidos()
+        escucharPartidosSueltos()
+        escucharPartidosDeLiga()
     }
 
-    private fun obtenerPartidos() {
-        db.collection("partidosSueltos")
+    private fun escucharPartidosSueltos() {
+        val miId = auth.currentUser?.uid ?: return
+
+        db.collection("partidos_sueltos")
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
 
-                val userId = auth.currentUser?.uid ?: return@addSnapshotListener
-                val listaMisPartidos = mutableListOf<PartidoSuelto>()
-                val listaExplorar = mutableListOf<PartidoSuelto>()
-
-                for (document in snapshot.documents) {
-                    val partido = document.toObject(PartidoSuelto::class.java)?.copy(id = document.id)
-                    if (partido != null) {
-                        if (partido.idsJugadores.contains(userId)) {
-                            listaMisPartidos.add(partido)
-                        } else {
-                            listaExplorar.add(partido)
-                        }
-                    }
+                val todosLosPartidos = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(PartidoSuelto::class.java)?.copy(id = doc.id)
                 }
 
-                _misPartidos.value = listaMisPartidos
-                _partidosExplorar.value = listaExplorar
+                _misPartidosSueltos.value = todosLosPartidos.filter { it.idsJugadores.contains(miId) }
+
+                _partidosExplorar.value = todosLosPartidos.filter { !it.idsJugadores.contains(miId) }
+            }
+    }
+
+    private fun escucharPartidosDeLiga() {
+        val miId = auth.currentUser?.uid ?: return
+
+        db.collection("ligas")
+            .whereArrayContains("idsMiembros", miId)
+            .addSnapshotListener { snapshotLigas, errorLigas ->
+                if (errorLigas != null || snapshotLigas == null) return@addSnapshotListener
+
+                val idsMisLigas = snapshotLigas.documents.map { it.id }
+
+                if (idsMisLigas.isEmpty()) {
+                    _partidosLiga.value = emptyList()
+                    return@addSnapshotListener
+                }
+
+                db.collection("partidos")
+                    .whereIn("idLiga", idsMisLigas)
+                    .addSnapshotListener { snapshotPartidos, errorPartidos ->
+                        if (errorPartidos != null || snapshotPartidos == null) return@addSnapshotListener
+
+                        val todosLosPartidosLiga = snapshotPartidos.documents.mapNotNull { doc ->
+                            doc.toObject(Partido::class.java)?.copy(id = doc.id)
+                        }
+
+                        _partidosLiga.value = todosLosPartidosLiga
+                    }
             }
     }
 

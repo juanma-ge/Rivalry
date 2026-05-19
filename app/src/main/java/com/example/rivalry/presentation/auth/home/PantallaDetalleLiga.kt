@@ -2,6 +2,8 @@ package com.example.rivalry.presentation.auth.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +25,7 @@ import com.example.rivalry.presentation.auth.chat.ChatIntegrado
 import com.example.rivalry.presentation.auth.chat.ChatViewModel
 import com.example.rivalry.presentation.auth.chat.PestaniaEquipos
 import com.example.rivalry.presentation.auth.chat.PestaniaFichajes
+import com.example.rivalry.presentation.auth.chat.PantallaChatPrivado
 import com.example.rivalry.presentation.auth.chat.PestaniaPartidos
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
@@ -42,6 +45,7 @@ fun PantallaDetalleLiga(
     val miembrosLista by viewModel.miembrosLiga.collectAsState()
     val agentesLista by viewModel.agentesLibres.collectAsState()
     val chatViewModel: ChatViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val noticiasLiga by viewModel.noticiasLiga.collectAsState()
 
     val miId = FirebaseAuth.getInstance().currentUser?.uid
     val estoyApuntado = liga?.idsMiembros?.contains(miId) == true
@@ -61,14 +65,18 @@ fun PantallaDetalleLiga(
     val ligaActual by viewModel.ligaSeleccionada.collectAsState()
     val miUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
 
+    var chatPrivadoActivoId by remember { mutableStateOf<String?>(null) }
+    val socialViewModel: SocialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
     LaunchedEffect(ligaId) {
         viewModel.cargarDetalleLiga(ligaId)
         viewModel.cargarPartidosLiga(ligaId)
+        viewModel.cargarNoticias(ligaId)
     }
 
     LaunchedEffect(liga) {
         liga?.let {
-            viewModel.cargarMiembros(it.idsMiembros, it.creadorId, it.nombresEquipos)
+            viewModel.cargarMiembros(ligaId, it.idsMiembros, it.creadorId, it.nombresEquipos)
             viewModel.cargarAgentesLibres(it.idsAgentesLibres)
         }
     }
@@ -176,8 +184,31 @@ fun PantallaDetalleLiga(
                         }
                     }
                     1 -> PestaniaClasificacion(miembros = miembrosLista, partidos = partidosLista)
-                    2 -> Text("Información general y normas.", modifier = Modifier.padding(16.dp))
-                    3 -> PestaniaEquipos(
+                    2 -> {
+                        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                            Text("Últimos Movimientos", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            if (noticiasLiga.isEmpty()) {
+                                Text("No hay noticias ni fichajes recientes.", color = Color.Gray)
+                            } else {
+                                LazyColumn {
+                                    items(noticiasLiga) { noticia ->
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                                        ) {
+                                            Text(
+                                                text = noticia.texto,
+                                                modifier = Modifier.padding(16.dp),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }                    3 -> PestaniaEquipos(
                         liga = liga,
                         miembros = miembrosLista,
                         miId = miId,
@@ -189,14 +220,17 @@ fun PantallaDetalleLiga(
                     4 -> PestaniaFichajes(
                         agentesLibres = agentesLista,
                         esCapitan = estoyApuntado,
-                        onFicharJugador = { idAgente, nombreEquipo ->
-                            viewModel.ficharAgenteLibre(
-                                ligaId = ligaId,
-                                agenteId = idAgente,
-                                nombreEquipo = nombreEquipo
-                            )
+                        onFicharJugador = { agente ->
+                            val miNombreEquipo = liga?.nombresEquipos?.get(miId) ?: "Tu equipo"
+                            viewModel.ficharAgenteLibre(ligaId, agente, miNombreEquipo)
+                        },
+                        onMensajeClick = { idAgente ->
+                            socialViewModel.obtenerOCrearChatPrivado(idAgente) { idChatGenerado ->
+                                chatPrivadoActivoId = idChatGenerado
+                            }
                         }
-                    )                    5 -> if (estoyApuntado) {
+                    )
+                    5 -> if (estoyApuntado) {
                         ChatIntegrado(ligaId, chatViewModel, miId)
                     } else {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -244,7 +278,6 @@ fun PantallaDetalleLiga(
             )
         }
 
-        // DIÁLOGO PARA GUARDAR RESULTADOS
         if (partidoSeleccionadoParaResultado != null) {
             AlertDialog(
                 onDismissRequest = { partidoSeleccionadoParaResultado = null },
@@ -291,4 +324,12 @@ fun PantallaDetalleLiga(
             )
         }
     }
+
+    chatPrivadoActivoId?.let { idDelChat ->
+        PantallaChatPrivado(
+            idChat = idDelChat,
+            onVolver = { chatPrivadoActivoId = null }
+        )
+    }
+
 }

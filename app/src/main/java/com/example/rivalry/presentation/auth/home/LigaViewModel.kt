@@ -3,9 +3,9 @@ package com.example.rivalry.presentation.auth.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rivalry.domain.model.Deporte
-import com.example.rivalry.domain.model.Goleador
 import com.example.rivalry.domain.model.Liga
 import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.domain.model.NoticiaLiga
 import com.example.rivalry.domain.model.Partido
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -114,34 +114,6 @@ class LigaViewModel : ViewModel() {
     private val _miembrosLiga = MutableStateFlow<List<MiembroUI>>(emptyList())
     val miembrosLiga: StateFlow<List<MiembroUI>> = _miembrosLiga.asStateFlow()
 
-    fun cargarMiembros(ids: List<String>, creadorId: String, nombresEquipos: Map<String, String>) {
-        if (ids.isEmpty()) {
-            _miembrosLiga.value = emptyList()
-            return
-        }
-
-        FirebaseFirestore.getInstance().collection("usuarios")
-            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), ids)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val lista = snapshot.documents.mapNotNull { doc ->
-                    val nombre = doc.getString("apodo")
-                        ?: doc.getString("nombreUsuario")
-                        ?: doc.getString("nombre")
-                        ?: "Jugador"
-
-                    val esAdmin = doc.id == creadorId
-                    val nombreEquipo = nombresEquipos[doc.id] ?: "Equipo de $nombre"
-
-                    MiembroUI(doc.id, nombre, esAdmin, nombreEquipo)
-                }
-                _miembrosLiga.value = lista
-            }
-            .addOnFailureListener {
-                _miembrosLiga.value = emptyList()
-            }
-    }
-
     fun cargarDetalleLiga(ligaId: String) {
         _cargando.value = true
 
@@ -176,19 +148,85 @@ class LigaViewModel : ViewModel() {
             .update(updates)
     }
 
-    fun ficharAgenteLibre(ligaId: String, agenteId: String, nombreEquipo: String) {
+    private val _noticiasLiga = MutableStateFlow<List<NoticiaLiga>>(emptyList())
+    val noticiasLiga: StateFlow<List<NoticiaLiga>> = _noticiasLiga.asStateFlow()
+
+    fun cargarNoticias(ligaId: String) {
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId).collection("noticias")
+            .orderBy("fecha", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                val lista = snapshot?.documents?.mapNotNull { doc ->
+                    NoticiaLiga(
+                        id = doc.id,
+                        texto = doc.getString("texto") ?: "",
+                        fecha = doc.getLong("fecha") ?: 0L
+                    )
+                } ?: emptyList()
+                _noticiasLiga.value = lista
+            }
+    }
+
+    fun ficharAgenteLibre(ligaId: String, agente: AgenteLibreUI, nombreEquipo: String) {
         val db = FirebaseFirestore.getInstance()
+        val miId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val ligaRef = db.collection("ligas").document(ligaId)
 
-        val actualizaciones = mapOf(
-            "idsAgentesLibres" to FieldValue.arrayRemove(agenteId),
-            "idsMiembros" to FieldValue.arrayUnion(agenteId),
-            "nombresEquipos.$agenteId" to nombreEquipo
-        )
+        db.runTransaction { transaction ->
+            val snapshot = transaction.get(ligaRef)
+            val idsMiembros = snapshot.get("idsMiembros") as? MutableList<String> ?: mutableListOf()
 
-        ligaRef.update(actualizaciones).addOnSuccessListener {
-            println("¡Jugador fichado con éxito por el equipo $nombreEquipo!")
+            if (!idsMiembros.contains(agente.id)) {
+                idsMiembros.add(agente.id)
+            }
+
+            transaction.update(ligaRef, "idsMiembros", idsMiembros)
+            transaction.update(ligaRef, "asignacionesEquipos.${agente.id}", miId)
+            transaction.update(ligaRef, "idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayRemove(agente.id))
+
+            // MAGIA DE LAS NOTICIAS: Generar el traspaso en la base de datos
+            val nuevaNoticiaRef = ligaRef.collection("noticias").document()
+            val noticiaData = mapOf(
+                "texto" to "🤝 El equipo $nombreEquipo ha fichado al jugador ${agente.nombre}.",
+                "fecha" to System.currentTimeMillis()
+            )
+            transaction.set(nuevaNoticiaRef, noticiaData)
+
+        }.addOnSuccessListener {
+            cargarDetalleLiga(ligaId)
         }
+    }
+
+    fun cargarMiembros(ligaId: String, ids: List<String>, creadorId: String, nombresEquipos: Map<String, String>) {
+        if (ids.isEmpty()) {
+            _miembrosLiga.value = emptyList()
+            return
+        }
+
+        FirebaseFirestore.getInstance().collection("ligas").document(ligaId).get()
+            .addOnSuccessListener { ligaDoc ->
+                val asignacionesEquipos = ligaDoc.get("asignacionesEquipos") as? Map<String, String> ?: emptyMap()
+
+                FirebaseFirestore.getInstance().collection("usuarios")
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), ids)
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val lista = snapshot.documents.mapNotNull { doc ->
+                            val nombre = doc.getString("apodo") ?: doc.getString("nombreUsuario") ?: doc.getString("nombre") ?: "Jugador"
+                            val esAdmin = doc.id == creadorId
+
+                            val nombreEquipo = if (nombresEquipos.containsKey(doc.id)) {
+                                nombresEquipos[doc.id] ?: "Sin equipo"
+                            } else {
+                                val idDeSuCapitan = asignacionesEquipos[doc.id]
+                                nombresEquipos[idDeSuCapitan] ?: "Agente Libre / Sin Equipo"
+                            }
+
+                            MiembroUI(doc.id, nombre, esAdmin, nombreEquipo)
+                        }
+                        _miembrosLiga.value = lista
+                    }
+            }
     }
 
     fun salirDeLiga(ligaId: String, onVolver: () -> Unit) {

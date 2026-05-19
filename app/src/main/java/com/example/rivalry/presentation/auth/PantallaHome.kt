@@ -243,6 +243,10 @@ fun PantallaHome(
                         partidos = misPartidosFinalizadosLiga,
                         onLigaClick = { idLiga ->
                             onNavegarADetalleLiga(idLiga)
+                        },
+                        onLogout = {
+                            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                            onCerrarSesion()
                         }
                     )
                 }

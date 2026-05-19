@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -31,6 +32,7 @@ fun SeccionPerfil(
     ligas: List<com.example.rivalry.domain.model.Liga>,
     partidos: List<Partido>,
     onLigaClick: (String) -> Unit,
+    onLogout: () -> Unit,
     viewModel: PerfilViewModel = viewModel()
 ) {
     val user = FirebaseAuth.getInstance().currentUser
@@ -45,6 +47,8 @@ fun SeccionPerfil(
     var dorsal by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var isEditing by remember { mutableStateOf(false) }
+
+    var mostrarAjustes by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.cargarPerfil() }
     LaunchedEffect(perfilActual) {
@@ -70,8 +74,9 @@ fun SeccionPerfil(
                 )
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    IconButton(onClick = { /* TODO: Ajustes */ }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Settings, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+                    // BOTÓN DE AJUSTES QUE ABRE EL MENÚ
+                    IconButton(onClick = { mostrarAjustes = true }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Surface(
@@ -193,6 +198,36 @@ fun SeccionPerfil(
                 CardPartidoMini(partido = partido)
             }
         }
+    }
+
+    if (mostrarAjustes) {
+        AlertDialog(
+            onDismissRequest = { mostrarAjustes = false },
+            title = { Text("Configuración", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Aquí podrás gestionar las preferencias de tu cuenta.")
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = {
+                            mostrarAjustes = false
+                            onLogout()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Cerrar Sesión")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { mostrarAjustes = false }) {
+                    Text("Volver")
+                }
+            }
+        )
     }
 }
 

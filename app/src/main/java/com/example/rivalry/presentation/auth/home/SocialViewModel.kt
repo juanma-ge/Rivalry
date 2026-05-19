@@ -115,4 +115,30 @@ class SocialViewModel : ViewModel() {
     fun limpiarMensaje() {
         _mensajeUI.value = null
     }
+
+    fun obtenerOCrearChatPrivado(idOtroUsuario: String, onExito: (String) -> Unit) {
+        val miId = auth.currentUser?.uid ?: return
+        if (miId == idOtroUsuario) return
+
+        val idChatPrivado = if (miId < idOtroUsuario) "${miId}_${idOtroUsuario}" else "${idOtroUsuario}_${miId}"
+
+        val chatRef = db.collection("chatsPrivados").document(idChatPrivado)
+
+        chatRef.get().addOnSuccessListener { documento ->
+            if (documento.exists()) {
+                onExito(idChatPrivado)
+            } else {
+                val nuevoChat = mapOf(
+                    "idChat" to idChatPrivado,
+                    "participantes" to listOf(miId, idOtroUsuario),
+                    "ultimoMensaje" to "",
+                    "fechaUltimoMensaje" to System.currentTimeMillis()
+                )
+                chatRef.set(nuevoChat).addOnSuccessListener {
+                    onExito(idChatPrivado)
+                }
+            }
+        }
+    }
+
 }

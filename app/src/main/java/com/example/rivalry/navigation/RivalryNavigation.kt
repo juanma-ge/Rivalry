@@ -59,7 +59,8 @@ fun RivalryNavigation(viewModel: AuthViewModel) {
                 onNavegarACrearPartido = { navController.navigate("crear_partido") },
                 onCerrarSesion = {
                     navController.navigate("login") {
-                        popUpTo(0)
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )

@@ -3,26 +3,29 @@ package com.example.rivalry.presentation.auth.chat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.rivalry.presentation.auth.components.CardAgenteLibre
 import com.example.rivalry.presentation.auth.home.AgenteLibreUI
 
 @Composable
 fun PestaniaFichajes(
     agentesLibres: List<AgenteLibreUI>,
     esCapitan: Boolean,
-    onFicharJugador: (String, String) -> Unit
+    onFicharJugador: (AgenteLibreUI) -> Unit,
+    onMensajeClick: (String) -> Unit
 ) {
     var mostrarDialogo by remember { mutableStateOf(false) }
     var agenteSeleccionado by remember { mutableStateOf<AgenteLibreUI?>(null) }
-    var nombreEquipoAsignado by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Mercado de Fichajes", fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -39,10 +42,13 @@ fun PestaniaFichajes(
                 items(agentesLibres) { agente ->
                     CardAgenteLibre(
                         agente = agente,
-                        mostrarBoton = esCapitan,
+                        mostrarBotonFichar = esCapitan,
                         onFicharClick = {
                             agenteSeleccionado = agente
                             mostrarDialogo = true
+                        },
+                        onMensajeClick = {
+                            onMensajeClick(agente.id)
                         }
                     )
                 }
@@ -50,48 +56,80 @@ fun PestaniaFichajes(
         }
     }
 
-    // --- DIÁLOGO PARA CONFIRMAR FICHAJE ---
     if (mostrarDialogo && agenteSeleccionado != null) {
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogo = false
-                nombreEquipoAsignado = ""
             },
-            title = { Text("Fichar a ${agenteSeleccionado!!.nombre}") },
+            title = { Text("Fichar jugador") },
             text = {
-                Column {
-                    Text("Escribe el nombre de tu equipo para asignar a este jugador.")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = nombreEquipoAsignado,
-                        onValueChange = { nombreEquipoAsignado = it },
-                        label = { Text("Nombre de tu Equipo") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                Text("¿Quieres incorporar a ${agenteSeleccionado!!.nombre} a tu equipo?")
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (nombreEquipoAsignado.isNotBlank()) {
-                            onFicharJugador(agenteSeleccionado!!.id, nombreEquipoAsignado)
-                            mostrarDialogo = false
-                            nombreEquipoAsignado = ""
-                        }
+                        onFicharJugador(agenteSeleccionado!!)
+                        mostrarDialogo = false
                     }
-                ) {
-                    Text("Confirmar Fichaje")
-                }
+                ) { Text("Confirmar fichaje") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     mostrarDialogo = false
-                    nombreEquipoAsignado = ""
                 }) {
                     Text("Cancelar")
                 }
             }
         )
+    }
+}
+
+@Composable
+fun CardAgenteLibre(
+    agente: AgenteLibreUI,
+    mostrarBotonFichar: Boolean,
+    onFicharClick: () -> Unit,
+    onMensajeClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Text(
+                    text = agente.nombre,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(text = agente.email, fontSize = 13.sp, color = Color.Gray)
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                IconButton(onClick = onMensajeClick) {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Enviar Mensaje",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                if (mostrarBotonFichar) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Button(onClick = onFicharClick, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
+                        Icon(Icons.Default.Add, contentDescription = "Fichar", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Fichar")
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,8 +1,10 @@
 package com.example.rivalry.presentation.auth.home
 
 import androidx.lifecycle.ViewModel
+import com.example.rivalry.domain.model.AmigoUI
 import com.example.rivalry.domain.model.SolicitudUI
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +19,46 @@ class SocialViewModel : ViewModel() {
     private val _solicitudes = MutableStateFlow<List<SolicitudUI>>(emptyList())
     val solicitudes: StateFlow<List<SolicitudUI>> = _solicitudes
 
+    private val _amigosLista = MutableStateFlow<List<AmigoUI>>(emptyList())
+    val amigosLista: StateFlow<List<AmigoUI>> = _amigosLista
+
     init {
         cargarSolicitudesPendientes()
+        escucharAmigosEnTiempoReal() // Escuchamos amigos desde el principio
+    }
+
+    private fun escucharAmigosEnTiempoReal() {
+        val miId = auth.currentUser?.uid ?: return
+
+        db.collection("usuarios").document(miId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+
+                val idsAmigos = snapshot.get("amigos") as? List<String> ?: emptyList()
+
+                if (idsAmigos.isEmpty()) {
+                    _amigosLista.value = emptyList()
+                    return@addSnapshotListener
+                }
+
+                val listaTemporal = mutableListOf<AmigoUI>()
+                var procesados = 0
+
+                idsAmigos.forEach { idAmigo ->
+                    db.collection("usuarios").document(idAmigo).get()
+                        .addOnSuccessListener { userDoc ->
+                            if (userDoc.exists()) {
+                                val nombre = userDoc.getString("apodo") ?: userDoc.getString("nombre") ?: "Usuario"
+                                val avatarUrl = userDoc.getString("avatarUrl") ?: ""
+                                listaTemporal.add(AmigoUI(idAmigo, nombre, avatarUrl))
+                            }
+                            procesados++
+                            if (procesados == idsAmigos.size) {
+                                _amigosLista.value = listaTemporal.toList()
+                            }
+                        }
+                }
+            }
     }
 
     private fun cargarSolicitudesPendientes() {
@@ -46,8 +86,6 @@ class SocialViewModel : ViewModel() {
                         .addOnSuccessListener { userDoc ->
                             val nombre = userDoc.getString("apodo") ?: userDoc.getString("nombre") ?: "Usuario"
                             solicitudesTemporales.add(SolicitudUI(idSolicitud, idEmisor, nombre))
-
-                            // Actualizamos la UI
                             _solicitudes.value = solicitudesTemporales.toList()
                         }
                 }
@@ -94,22 +132,33 @@ class SocialViewModel : ViewModel() {
                     .addOnSuccessListener {
                         _mensajeUI.value = "¡Solicitud enviada a $apodoReceptor!"
                     }
-                    .addOnFailureListener {
-                        _mensajeUI.value = "Error al enviar la solicitud."
-                    }
+                    .addOnFailureListener { _mensajeUI.value = "Error al enviar la solicitud." }
             }
-            .addOnFailureListener {
-                _mensajeUI.value = "Error de conexión al buscar."
-            }
+            .addOnFailureListener { _mensajeUI.value = "Error de conexión al buscar." }
     }
 
     fun responderSolicitud(idSolicitud: String, aceptar: Boolean) {
-        val estadoNuevo = if (aceptar) "ACEPTADA" else "RECHAZADA"
+        val miId = auth.currentUser?.uid ?: return
 
-        db.collection("solicitudes").document(idSolicitud)
-            .update("estado", estadoNuevo)
-            .addOnSuccessListener {
-            }
+        if (aceptar) {
+            db.collection("solicitudes").document(idSolicitud).get()
+                .addOnSuccessListener { doc ->
+                    val idEmisor = doc.getString("idEmisor") ?: return@addOnSuccessListener
+
+                    // Añadimos a las dos listas cruzadas
+                    db.collection("usuarios").document(idEmisor)
+                        .update("amigos", FieldValue.arrayUnion(miId))
+
+                    db.collection("usuarios").document(miId)
+                        .update("amigos", FieldValue.arrayUnion(idEmisor))
+                        .addOnSuccessListener {
+                            db.collection("solicitudes").document(idSolicitud)
+                                .update("estado", "ACEPTADA")
+                        }
+                }
+        } else {
+            db.collection("solicitudes").document(idSolicitud).update("estado", "RECHAZADA")
+        }
     }
 
     fun limpiarMensaje() {
@@ -121,7 +170,6 @@ class SocialViewModel : ViewModel() {
         if (miId == idOtroUsuario) return
 
         val idChatPrivado = if (miId < idOtroUsuario) "${miId}_${idOtroUsuario}" else "${idOtroUsuario}_${miId}"
-
         val chatRef = db.collection("chatsPrivados").document(idChatPrivado)
 
         chatRef.get().addOnSuccessListener { documento ->
@@ -140,5 +188,4 @@ class SocialViewModel : ViewModel() {
             }
         }
     }
-
 }

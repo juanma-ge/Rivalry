@@ -22,7 +22,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaChatPrivado(
     idChat: String,
@@ -37,7 +36,7 @@ fun PantallaChatPrivado(
             .collection("chatsPrivados")
             .document(idChat)
             .collection("mensajes")
-            .orderBy("fecha", Query.Direction.ASCENDING)
+            .orderBy("fecha", com.google.firebase.firestore.Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
                     listaMensajes = snapshot.documents.mapNotNull { doc ->
@@ -47,103 +46,105 @@ fun PantallaChatPrivado(
             }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mensaje Directo", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-                navigationIcon = {
-                    IconButton(onClick = onVolver) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary, titleContentColor = Color.White, navigationIconContentColor = Color.White)
-            )
-        }
-    ) { paddingValues ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
-            ) {
-                items(listaMensajes) { msg ->
-                    val esMio = msg.idEmisor == miId
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = if (esMio) Alignment.CenterEnd else Alignment.CenterStart
+            IconButton(onClick = onVolver) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.White)
+            }
+            Text("Mensaje Directo", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(listaMensajes) { msg ->
+                val esMio = msg.idEmisor == miId
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = if (esMio) Alignment.CenterEnd else Alignment.CenterStart
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(
+                            topStart = 12.dp,
+                            topEnd = 12.dp,
+                            bottomStart = if (esMio) 12.dp else 0.dp,
+                            bottomEnd = if (esMio) 0.dp else 12.dp
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (esMio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier.widthIn(max = 280.dp)
                     ) {
-                        Card(
-                            shape = RoundedCornerShape(
-                                topStart = 12.dp,
-                                topEnd = 12.dp,
-                                bottomStart = if (esMio) 12.dp else 0.dp,
-                                bottomEnd = if (esMio) 0.dp else 12.dp
-                            ),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (esMio) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                            modifier = Modifier.widthIn(max = 280.dp)
-                        ) {
-                            Text(
-                                text = msg.texto,
-                                color = if (esMio) Color.White else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                fontSize = 14.sp
-                            )
-                        }
+                        Text(
+                            text = msg.texto,
+                            color = if (esMio) Color.White else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), // Textos más compactos
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
+        }
 
-            Row(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = textoMensaje,
+                onValueChange = { textoMensaje = it },
+                placeholder = { Text("Escribe un mensaje...") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .height(50.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = {
+                    if (textoMensaje.isNotBlank()) {
+                        val nuevoMsg = mapOf(
+                            "idEmisor" to miId,
+                            "texto" to textoMensaje.trim(),
+                            "fecha" to System.currentTimeMillis()
+                        )
+                        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+
+                        db.collection("chatsPrivados").document(idChat)
+                            .collection("mensajes").add(nuevoMsg)
+
+                        db.collection("chatsPrivados").document(idChat).update(
+                            mapOf(
+                                "ultimoMensaje" to textoMensaje.trim(),
+                                "fechaUltimoMensaje" to System.currentTimeMillis()
+                            )
+                        )
+                        textoMensaje = ""
+                    }
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
             ) {
-                OutlinedTextField(
-                    value = textoMensaje,
-                    onValueChange = { textoMensaje = it },
-                    placeholder = { Text("Escribe un mensaje privado...") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    onClick = {
-                        if (textoMensaje.isNotBlank()) {
-                            val nuevoMsg = mapOf(
-                                "idEmisor" to miId,
-                                "texto" to textoMensaje.trim(),
-                                "fecha" to System.currentTimeMillis()
-                            )
-                            val db = FirebaseFirestore.getInstance()
-
-                            db.collection("chatsPrivados").document(idChat)
-                                .collection("mensajes").add(nuevoMsg)
-
-                            db.collection("chatsPrivados").document(idChat).update(
-                                mapOf(
-                                    "ultimoMensaje" to textoMensaje.trim(),
-                                    "fechaUltimoMensaje" to System.currentTimeMillis()
-                                )
-                            )
-                            textoMensaje = ""
-                        }
-                    },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.primary, CircleShape)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
-                }
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White, modifier = Modifier.size(20.dp))
             }
         }
     }

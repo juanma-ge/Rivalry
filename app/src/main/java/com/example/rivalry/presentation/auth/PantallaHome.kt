@@ -14,9 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rivalry.presentation.auth.components.ItemLiga
 import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
+import com.example.rivalry.presentation.auth.home.PerfilViewModel
+import com.example.rivalry.presentation.auth.home.SocialViewModel
 import com.example.rivalry.presentation.auth.home.SeccionPartidos
 import com.example.rivalry.presentation.auth.home.SeccionPerfil
 import com.example.rivalry.presentation.auth.home.SeccionSocial
@@ -27,6 +30,8 @@ import kotlinx.coroutines.launch
 fun PantallaHome(
     viewModel: LigaViewModel,
     partidoViewModel: PartidoSueltoViewModel,
+    socialViewModel: SocialViewModel = viewModel(),
+    perfilViewModel: PerfilViewModel = viewModel(),
     onNavegarACrearLiga: () -> Unit,
     onNavegarADetalleLiga: (String) -> Unit,
     onNavegarACrearPartido: () -> Unit,
@@ -47,6 +52,7 @@ fun PantallaHome(
     val misPartidosSueltos by partidoViewModel.misPartidosSueltos.collectAsState()
     val partidosExplorar by partidoViewModel.partidosExplorar.collectAsState()
 
+    // ... EL RESTO SIGUE IGUAL (Scaffold, TopAppBar, etc.)
     Scaffold(
         topBar = {
             Column {
@@ -229,16 +235,14 @@ fun PantallaHome(
                         }
                     )
                 }
-
                 2 -> {
-                    SeccionSocial()
+                    SeccionSocial(viewModel = socialViewModel)
                 }
 
                 3 -> {
                     val misPartidosFinalizadosLiga = partidosLiga.filter { it.terminado || it.estado == "FINALIZADO" }
-                    val misPachangas = misPartidosSueltos
-
                     SeccionPerfil(
+                        viewModel = perfilViewModel,
                         ligas = misLigas,
                         partidos = misPartidosFinalizadosLiga,
                         onLigaClick = { idLiga ->

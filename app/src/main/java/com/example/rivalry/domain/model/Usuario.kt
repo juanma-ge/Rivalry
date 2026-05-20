@@ -6,5 +6,6 @@ data class Usuario(
     val nombreUsuario: String = "",
     val avatarUrl: String = "",
     val ligasJugadas: List<String> = emptyList(),
-    val esAdmin: Boolean = false
+    val esAdmin: Boolean = false,
+    val amigos: List<String> = emptyList()
 )

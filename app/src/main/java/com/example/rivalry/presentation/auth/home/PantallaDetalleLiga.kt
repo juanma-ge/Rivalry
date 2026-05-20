@@ -218,7 +218,7 @@ fun PantallaDetalleLiga(
                         }
                     )
                     4 -> PestaniaFichajes(
-                        agentesLibres = agentesLista,
+                        agentesLibres = agentesLista,   
                         esCapitan = estoyApuntado,
                         onFicharJugador = { agente ->
                             val miNombreEquipo = liga?.nombresEquipos?.get(miId) ?: "Tu equipo"

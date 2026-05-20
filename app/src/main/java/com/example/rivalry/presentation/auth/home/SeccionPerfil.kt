@@ -1,15 +1,19 @@
 package com.example.rivalry.presentation.auth.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -18,11 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.rivalry.domain.model.Partido
 import com.example.rivalry.presentation.auth.components.CardPartidoMini
 import com.google.firebase.auth.FirebaseAuth
@@ -50,6 +56,16 @@ fun SeccionPerfil(
 
     var mostrarAjustes by remember { mutableStateOf(false) }
 
+    // --- LAUNCHER PARA SELECCIONAR FOTO DE PERFIL ---
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                viewModel.subirFotoPerfil(uri)
+            }
+        }
+    )
+
     LaunchedEffect(Unit) { viewModel.cargarPerfil() }
     LaunchedEffect(perfilActual) {
         apodo = perfilActual.apodo
@@ -74,7 +90,6 @@ fun SeccionPerfil(
                 )
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // BOTÓN DE AJUSTES QUE ABRE EL MENÚ
                     IconButton(onClick = { mostrarAjustes = true }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Default.Settings, contentDescription = "Ajustes", tint = Color.Gray, modifier = Modifier.size(20.dp))
                     }
@@ -102,12 +117,30 @@ fun SeccionPerfil(
 
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
-                    modifier = Modifier.size(90.dp).clip(CircleShape).background(Color.LightGray),
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                        .clickable {
+                            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Person, null, modifier = Modifier.size(45.dp), tint = Color.DarkGray)
+                    if (perfilActual.avatarUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = perfilActual.avatarUrl,
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(Icons.Default.Person, null, modifier = Modifier.size(50.dp), tint = Color.DarkGray)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+                Text("Toca la foto para cambiarla", fontSize = 10.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(8.dp))
+
                 if (isEditing) {
                     OutlinedTextField(
                         value = apodo,
@@ -208,6 +241,7 @@ fun SeccionPerfil(
                 Column {
                     Text("Aquí podrás gestionar las preferencias de tu cuenta.")
                     Spacer(modifier = Modifier.height(24.dp))
+
                     Button(
                         onClick = {
                             mostrarAjustes = false
@@ -216,7 +250,7 @@ fun SeccionPerfil(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Cerrar Sesión")
                     }

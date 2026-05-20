@@ -45,4 +45,24 @@ class PerfilViewModel : ViewModel() {
                 _perfil.value = UsuarioPerfil(apodo, posicion, dorsal, bio)
             }
     }
+
+    fun subirFotoPerfil(uri: android.net.Uri) {
+        val userId = auth.currentUser?.uid ?: return
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
+        val fotoRef = storageRef.child("fotos_perfil/$userId.jpg")
+
+        fotoRef.putFile(uri).addOnSuccessListener {
+            fotoRef.downloadUrl.addOnSuccessListener { url ->
+                db.collection("usuarios").document(userId)
+                    .update("avatarUrl", url.toString())
+                    .addOnSuccessListener {
+                        cargarPerfil()
+                    }
+            }
+        }.addOnFailureListener {
+            println("Error al subir la foto de perfil: ${it.message}")
+        }
+    }
+
 }

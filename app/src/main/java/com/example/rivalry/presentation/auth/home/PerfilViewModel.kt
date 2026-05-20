@@ -1,68 +1,77 @@
 package com.example.rivalry.presentation.auth.home
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import java.io.File
+import java.io.FileOutputStream
 
 class PerfilViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
+
     private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
     private val _perfil = MutableStateFlow(UsuarioPerfil())
-    val perfil: StateFlow<UsuarioPerfil> = _perfil
+    val perfil: StateFlow<UsuarioPerfil> = _perfil.asStateFlow()
 
     fun cargarPerfil() {
         val userId = auth.currentUser?.uid ?: return
-        db.collection("usuarios").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val apodo = document.getString("apodo") ?: ""
-                    val posicion = document.getString("posicion") ?: "MED"
-                    val dorsal = document.getString("dorsal") ?: "8"
-                    val bio = document.getString("bio") ?: "Buscando equipo para los fines de semana."
-                    _perfil.value = UsuarioPerfil(apodo, posicion, dorsal, bio)
+
+        db.collection("usuarios").document(userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+
+                if (snapshot != null && snapshot.exists()) {
+                    val perfilDescargado = snapshot.toObject(UsuarioPerfil::class.java)
+                    if (perfilDescargado != null) {
+                        _perfil.value = perfilDescargado
+                    }
                 }
             }
     }
 
     fun guardarPerfil(apodo: String, posicion: String, dorsal: String, bio: String) {
         val userId = auth.currentUser?.uid ?: return
-        val codigoAmigo = "RIV-${userId.take(5).uppercase()}"
 
-        val datosUsuario = mapOf(
+        val updates = mapOf(
             "apodo" to apodo,
             "posicion" to posicion,
             "dorsal" to dorsal,
-            "bio" to bio,
-            "codigoAmigo" to codigoAmigo
+            "bio" to bio
         )
 
         db.collection("usuarios").document(userId)
-            .set(datosUsuario, com.google.firebase.firestore.SetOptions.merge())
-            .addOnSuccessListener {
-                _perfil.value = UsuarioPerfil(apodo, posicion, dorsal, bio)
-            }
+            .set(updates, SetOptions.merge())
     }
 
-    fun subirFotoPerfil(uri: android.net.Uri) {
+    fun subirFotoPerfil(context: android.content.Context, uri: Uri) {
         val userId = auth.currentUser?.uid ?: return
-        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
-        val fotoRef = storageRef.child("fotos_perfil/$userId.jpg")
 
-        fotoRef.putFile(uri).addOnSuccessListener {
-            fotoRef.downloadUrl.addOnSuccessListener { url ->
-                db.collection("usuarios").document(userId)
-                    .update("avatarUrl", url.toString())
-                    .addOnSuccessListener {
-                        cargarPerfil()
-                    }
-            }
-        }.addOnFailureListener {
-            println("Error al subir la foto de perfil: ${it.message}")
+        try {
+            val tiempo = System.currentTimeMillis()
+            val nombreArchivo = "perfil_${userId}_${tiempo}.jpg"
+            val archivoLocal = File(context.filesDir, nombreArchivo)
+
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val outputStream = FileOutputStream(archivoLocal)
+            inputStream?.copyTo(outputStream)
+
+            inputStream?.close()
+            outputStream.close()
+
+            val rutaPura = archivoLocal.absolutePath
+            val datosFoto = mapOf("avatarUrl" to rutaPura)
+
+            db.collection("usuarios").document(userId)
+                .set(datosFoto, SetOptions.merge())
+
+        } catch (e: Exception) {
+            println("Error en fichero local de perfil: ${e.message}")
         }
     }
-
 }

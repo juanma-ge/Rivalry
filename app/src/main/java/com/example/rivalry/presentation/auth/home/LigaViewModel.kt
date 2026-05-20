@@ -321,21 +321,30 @@ class LigaViewModel : ViewModel() {
         }
     }
 
-    fun subirLogoLiga(ligaId: String, uri: Uri) {
+    fun subirLogoLiga(context: android.content.Context, ligaId: String, uri: Uri) {
         val db = FirebaseFirestore.getInstance()
-        val storageRef = FirebaseStorage.getInstance().reference
-        val logoRef = storageRef.child("logos_ligas/$ligaId.jpg")
 
-        logoRef.putFile(uri).addOnSuccessListener {
-            logoRef.downloadUrl.addOnSuccessListener { url ->
-                db.collection("ligas").document(ligaId)
-                    .update("fotoUrl", url.toString())
-                    .addOnSuccessListener {
-                        cargarDetalleLiga(ligaId)
-                    }
-            }
-        }.addOnFailureListener {
-            println("Error al subir el logo de la liga: ${it.message}")
+        try {
+            val nombreArchivo = "liga_${ligaId}.jpg"
+            val archivoLocal = java.io.File(context.filesDir, nombreArchivo)
+
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val outputStream = java.io.FileOutputStream(archivoLocal)
+            inputStream?.copyTo(outputStream)
+            inputStream?.close()
+            outputStream.close()
+
+            val rutaAbsoluta = archivoLocal.absolutePath
+            val datosLogo = mapOf("fotoUrl" to rutaAbsoluta)
+
+            db.collection("ligas").document(ligaId)
+                .set(datosLogo, com.google.firebase.firestore.SetOptions.merge())
+                .addOnSuccessListener {
+                    cargarDetalleLiga(ligaId)
+                }
+
+        } catch (e: Exception) {
+            println("Error en fichero local de liga: ${e.message}")
         }
     }
 }

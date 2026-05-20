@@ -56,12 +56,13 @@ fun SeccionPerfil(
 
     var mostrarAjustes by remember { mutableStateOf(false) }
 
-    // --- LAUNCHER PARA SELECCIONAR FOTO DE PERFIL ---
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
-                viewModel.subirFotoPerfil(uri)
+                viewModel.subirFotoPerfil(context, uri)
             }
         }
     )
@@ -126,9 +127,12 @@ fun SeccionPerfil(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    if (perfilActual.avatarUrl.isNotEmpty()) {
+                    val rutaLimpia = perfilActual.avatarUrl.replace("file://", "")
+                    val archivoFoto = java.io.File(rutaLimpia)
+
+                    if (rutaLimpia.isNotEmpty() && archivoFoto.exists()) {
                         AsyncImage(
-                            model = perfilActual.avatarUrl,
+                            model = archivoFoto,
                             contentDescription = "Foto de perfil",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop

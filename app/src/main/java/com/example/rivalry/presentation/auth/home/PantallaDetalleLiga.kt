@@ -1,6 +1,10 @@
 package com.example.rivalry.presentation.auth.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,10 +20,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.rivalry.domain.model.Partido
 import com.example.rivalry.presentation.auth.chat.ChatIntegrado
 import com.example.rivalry.presentation.auth.chat.ChatViewModel
@@ -61,9 +67,19 @@ fun PantallaDetalleLiga(
     var golesLocalInput by remember { mutableStateOf("0") }
     var golesVisitanteInput by remember { mutableStateOf("0") }
 
-    val agentesLibresUI by viewModel.agentesLibres.collectAsState()
     val ligaActual by viewModel.ligaSeleccionada.collectAsState()
-    val miUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+
+    // ÚNICA DECLARACIÓN DEL CONTEXTO (Mantenemos esta arriba)
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val logoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                viewModel.subirLogoLiga(context, ligaId, uri)
+            }
+        }
+    )
 
     var chatPrivadoActivoId by remember { mutableStateOf<String?>(null) }
     val socialViewModel: SocialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -87,8 +103,6 @@ fun PantallaDetalleLiga(
         }
     }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,7 +111,6 @@ fun PantallaDetalleLiga(
                     IconButton(onClick = onVolver) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
                 },
                 actions = {
-                    // BOTÓN PDF
                     IconButton(onClick = {
                         GeneradorPDF.generarYCompartir(
                             context = context,
@@ -107,7 +120,7 @@ fun PantallaDetalleLiga(
                         )
                     }) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Share,
+                            imageVector = Icons.Default.Share,
                             contentDescription = "Exportar PDF",
                             tint = Color.White
                         )
@@ -125,8 +138,31 @@ fun PantallaDetalleLiga(
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(liga?.nombre ?: "Cargando...", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
-                Box(modifier = Modifier.size(100.dp).clip(CircleShape).background(Color.LightGray), contentAlignment = Alignment.Center) {
-                    Text("LOGO", color = Color.Gray)
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                        .clickable {
+                            logoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!liga?.fotoUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = liga?.fotoUrl,
+                            contentDescription = "Logo de la liga",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = "SUBIR LOGO",
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("${liga?.deporte} • ${liga?.ciudad}", color = Color.Gray)
@@ -208,7 +244,8 @@ fun PantallaDetalleLiga(
                                 }
                             }
                         }
-                    }                    3 -> PestaniaEquipos(
+                    }
+                    3 -> PestaniaEquipos(
                         liga = liga,
                         miembros = miembrosLista,
                         miId = miId,
@@ -218,15 +255,15 @@ fun PantallaDetalleLiga(
                         }
                     )
                     4 -> PestaniaFichajes(
-                        agentesLibres = agentesLista,   
+                        agentesLibres = agentesLista,
                         esCapitan = estoyApuntado,
                         onFicharJugador = { agente ->
                             val miNombreEquipo = liga?.nombresEquipos?.get(miId) ?: "Tu equipo"
                             viewModel.ficharAgenteLibre(ligaId, agente, miNombreEquipo)
                         },
                         onMensajeClick = { idAgente ->
-                            socialViewModel.obtenerOCrearChatPrivado(idAgente) { idChatGenerado ->
-                                chatPrivadoActivoId = idChatGenerado
+                            socialViewModel.obtenerOCrearChatPrivado(idAgente) { idChatGenerated ->
+                                chatPrivadoActivoId = idChatGenerated
                             }
                         }
                     )
@@ -331,5 +368,4 @@ fun PantallaDetalleLiga(
             onVolver = { chatPrivadoActivoId = null }
         )
     }
-
 }

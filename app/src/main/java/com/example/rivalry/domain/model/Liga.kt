@@ -14,5 +14,6 @@ data class Liga(
     val ciudad: String = "",
     val idsAgentesLibres: List<String> = emptyList(),
     val nombresEquipos: Map<String, String> = emptyMap(),
-    val estado: String = "INSCRIPCION"
+    val estado: String = "INSCRIPCION",
+    val fotoUrl: String = ""
 )

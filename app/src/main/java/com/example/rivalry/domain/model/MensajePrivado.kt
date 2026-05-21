@@ -4,5 +4,5 @@ data class MensajePrivado(
     val id: String = "",
     val idEmisor: String = "",
     val texto: String = "",
-    val fecha: Long = 0
+    val fecha: Long = 0L
 )

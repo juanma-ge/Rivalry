@@ -46,7 +46,7 @@ fun PantallaHome(
     val pagerState = rememberPagerState(pageCount = { titulosPestanias.size })
     val coroutineScope = rememberCoroutineScope()
 
-    var navSeleccionada by remember { mutableStateOf(0) }
+    var navSeleccionada by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(0) }
     var busquedaLiga by remember { mutableStateOf("") }
     val partidosLiga by partidoViewModel.partidosLiga.collectAsState()
     val misPartidosSueltos by partidoViewModel.misPartidosSueltos.collectAsState()

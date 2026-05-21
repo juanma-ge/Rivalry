@@ -82,6 +82,8 @@ fun PantallaDetalleLiga(
     )
 
     var chatPrivadoActivoId by remember { mutableStateOf<String?>(null) }
+    var nombreChatActivo by remember { mutableStateOf("") }
+    var avatarChatActivo by remember { mutableStateOf("") }
     val socialViewModel: SocialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     LaunchedEffect(ligaId) {
@@ -262,6 +264,10 @@ fun PantallaDetalleLiga(
                             viewModel.ficharAgenteLibre(ligaId, agente, miNombreEquipo)
                         },
                         onMensajeClick = { idAgente ->
+
+                            val agente = agentesLista.find { it.id == idAgente }
+                            nombreChatActivo = agente?.nombre ?: "Usuario"
+                            avatarChatActivo = ""
                             socialViewModel.obtenerOCrearChatPrivado(idAgente) { idChatGenerated ->
                                 chatPrivadoActivoId = idChatGenerated
                             }
@@ -365,6 +371,8 @@ fun PantallaDetalleLiga(
     chatPrivadoActivoId?.let { idDelChat ->
         PantallaChatPrivado(
             idChat = idDelChat,
+            nombreAmigo = nombreChatActivo,
+            avatarUrl = avatarChatActivo,
             onVolver = { chatPrivadoActivoId = null }
         )
     }

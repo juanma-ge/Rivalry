@@ -35,6 +35,8 @@ import com.example.rivalry.presentation.auth.chat.PantallaChatPrivado
 import com.example.rivalry.presentation.auth.chat.PestaniaPartidos
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import androidx.activity.compose.BackHandler
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +71,6 @@ fun PantallaDetalleLiga(
 
     val ligaActual by viewModel.ligaSeleccionada.collectAsState()
 
-    // ÚNICA DECLARACIÓN DEL CONTEXTO (Mantenemos esta arriba)
     val context = androidx.compose.ui.platform.LocalContext.current
 
     val logoPickerLauncher = rememberLauncherForActivityResult(
@@ -85,6 +86,10 @@ fun PantallaDetalleLiga(
     var nombreChatActivo by remember { mutableStateOf("") }
     var avatarChatActivo by remember { mutableStateOf("") }
     val socialViewModel: SocialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    BackHandler(enabled = chatPrivadoActivoId != null) {
+        chatPrivadoActivoId = null
+    }
 
     LaunchedEffect(ligaId) {
         viewModel.cargarDetalleLiga(ligaId)

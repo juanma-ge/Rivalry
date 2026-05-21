@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -69,9 +70,11 @@ fun PantallaChatPrivado(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.White)
             }
 
-            // Foto de perfil del amigo en el chat
             Box(
-                modifier = Modifier.size(36.dp).background(Color.White.copy(alpha = 0.2f), CircleShape),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 val rutaLimpia = avatarUrl.replace("file://", "")
@@ -100,7 +103,6 @@ fun PantallaChatPrivado(
             items(listaMensajes) { msg ->
                 val esMio = msg.idEmisor == miId
 
-                // Formateamos la hora del mensaje
                 val formatoHora = SimpleDateFormat("HH:mm", Locale.getDefault())
                 val horaString = formatoHora.format(Date(msg.fecha))
 
@@ -137,7 +139,6 @@ fun PantallaChatPrivado(
             }
         }
 
-        // --- BARRA DE ESCRIBIR ---
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically

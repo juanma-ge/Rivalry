@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.rivalry.presentation.auth.chat.PantallaChatPrivado
 import com.example.rivalry.presentation.auth.components.ContenidoListaSocial
+import androidx.activity.compose.BackHandler
 
 @Composable
 fun SeccionSocial(viewModel: SocialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
@@ -27,6 +28,10 @@ fun SeccionSocial(viewModel: SocialViewModel = androidx.lifecycle.viewmodel.comp
     val amigosFiltrados = remember(amigosLista, textoFiltroAmigos) {
         if (textoFiltroAmigos.isBlank()) amigosLista
         else amigosLista.filter { it.nombre.contains(textoFiltroAmigos, ignoreCase = true) }
+    }
+
+    BackHandler(enabled = idChatActivoId != null) {
+        idChatActivoId = null
     }
 
     if (esPantallaAncha) {

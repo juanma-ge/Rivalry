@@ -2,10 +2,14 @@ package com.example.rivalry.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val VerdeEsmeralda = Color(0xFF00A859)
+val FondoClaro = Color(0xFFF8F9FA)
+val TarjetaClara = Color(0xFFFFFFFF)
+val TextoOscuro = Color(0xFF212529)
+val NaranjaVivo = Color(0xFFFF6B00)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val VerdeNeon = Color(0xFF00E676)
+val FondoOscuro = Color(0xFF121212)
+val TarjetaOscura = Color(0xFF1E1E1E)
+val TextoClaro = Color(0xFFE0E0E0)
+val NaranjaFuego = Color(0xFFFF8A65)

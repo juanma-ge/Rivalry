@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -17,10 +18,9 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = VerdeNeon,
-    background = FondoOscuro,
-    surface = TarjetaOscura,
-    surfaceVariant = TarjetaOscura,
-    onPrimary = FondoOscuro,
+    background = Color(0xFF1A1C1E),
+    surface = Color(0xFF282A2D),
+    surfaceVariant = Color(0xFF35383C),
     onBackground = TextoClaro,
     onSurface = TextoClaro,
     onSurfaceVariant = TextoClaro,

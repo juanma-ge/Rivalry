@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +23,7 @@ import com.example.rivalry.domain.repository.AuthRepository
 import com.example.rivalry.navigation.RivalryNavigation
 import com.example.rivalry.presentation.auth.AuthViewModel
 import com.example.rivalry.presentation.auth.PantallaLogin
+import com.example.rivalry.presentation.auth.home.TemaViewModel
 import com.example.rivalry.ui.theme.RivalryTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -31,13 +35,16 @@ class MainActivity : ComponentActivity() {
         val firebaseAuth = FirebaseAuth.getInstance()
         val authRepository = AuthRepositoryImpl(firebaseAuth)
         val viewModel = AuthViewModel(authRepository)
+        val temaViewModel: TemaViewModel by viewModels()
         setContent {
-            RivalryTheme {
+            val modoOscuro by temaViewModel.esModoOscuro.collectAsState()
+
+            RivalryTheme(darkTheme = modoOscuro){
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RivalryNavigation(viewModel = viewModel)
+                    RivalryNavigation(viewModel = viewModel, temaViewModel = temaViewModel)
                 }
             }
         }

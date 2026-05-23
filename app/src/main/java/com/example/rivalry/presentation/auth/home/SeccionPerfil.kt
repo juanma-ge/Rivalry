@@ -238,12 +238,42 @@ fun SeccionPerfil(
     }
 
     if (mostrarAjustes) {
+        val contextoActividad = androidx.compose.ui.platform.LocalContext.current as androidx.activity.ComponentActivity
+        val temaViewModel: TemaViewModel = androidx.lifecycle.viewmodel.compose.viewModel(viewModelStoreOwner = contextoActividad)
+        val modoOscuro by temaViewModel.esModoOscuro.collectAsState()
+
         AlertDialog(
             onDismissRequest = { mostrarAjustes = false },
             title = { Text("Configuración", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Aquí podrás gestionar las preferencias de tu cuenta.")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Modo Oscuro",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Switch(
+                            checked = modoOscuro,
+                            onCheckedChange = { activado ->
+                                temaViewModel.alternarModo(activado)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(

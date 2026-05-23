@@ -12,12 +12,13 @@ import com.example.rivalry.presentation.auth.PantallaRegistro
 import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PantallaDetalleLiga
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
+import com.example.rivalry.presentation.auth.home.TemaViewModel
 import com.example.rivalry.presentation.home.PantallaCrearLiga
 import com.example.rivalry.presentation.home.PantallaCrearPartido
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun RivalryNavigation(viewModel: AuthViewModel) {
+fun RivalryNavigation(viewModel: AuthViewModel, temaViewModel: TemaViewModel) {
 
     val navController = rememberNavController()
 

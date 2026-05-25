@@ -52,7 +52,12 @@ fun PantallaHome(
     val misPartidosSueltos by partidoViewModel.misPartidosSueltos.collectAsState()
     val partidosExplorar by partidoViewModel.partidosExplorar.collectAsState()
 
-    // ... EL RESTO SIGUE IGUAL (Scaffold, TopAppBar, etc.)
+    // --- VARIABLES PARA EL CÓDIGO DE LIGA PRIVADA ---
+    var mostrarDialogoCodigo by remember { mutableStateOf(false) }
+    var codigoInput by remember { mutableStateOf("") }
+    var nombreEquipoCodigoInput by remember { mutableStateOf("") }
+    var mensajeErrorCodigo by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             Column {
@@ -102,7 +107,7 @@ fun PantallaHome(
                     onClick = { navSeleccionada = 1 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Email, contentDescription = "Mensajes") }, // NUEVO ICONO SOCIAL
+                    icon = { Icon(Icons.Default.Email, contentDescription = "Mensajes") },
                     label = { Text("Mensajes") },
                     selected = navSeleccionada == 2,
                     onClick = { navSeleccionada = 2 }
@@ -170,10 +175,21 @@ fun PantallaHome(
                             }
                         } else {
                             Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+
+                                Button(
+                                    onClick = { mostrarDialogoCodigo = true },
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary
+                                    )
+                                ) {
+                                    Text("Tengo un código de Liga Privada", fontWeight = FontWeight.Bold)
+                                }
+
                                 OutlinedTextField(
                                     value = busquedaLiga,
                                     onValueChange = { busquedaLiga = it },
-                                    label = { Text("Buscar liga por nombre, ciudad o provincia") },
+                                    label = { Text("Buscar liga pública por nombre o ciudad") },
                                     modifier = Modifier.fillMaxWidth(),
                                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                                     singleLine = true
@@ -197,7 +213,7 @@ fun PantallaHome(
                                     if (ligasFiltradas.isEmpty()) {
                                         item {
                                             Text(
-                                                "No hay ligas disponibles en '${busquedaLiga}'.",
+                                                "No hay ligas públicas disponibles en '${busquedaLiga}'.",
                                                 color = Color.Gray,
                                                 modifier = Modifier.padding(top = 16.dp)
                                             )
@@ -254,6 +270,57 @@ fun PantallaHome(
                         }
                     )
                 }
+            }
+
+              if (mostrarDialogoCodigo) {
+                AlertDialog(
+                    onDismissRequest = { mostrarDialogoCodigo = false },
+                    title = { Text("Unirse a Liga Privada", fontWeight = FontWeight.Bold) },
+                    text = {
+                        Column {
+                            Text("Pídele el código al administrador de la liga privada e introdúcelo aquí.", fontSize = 14.sp, color = Color.Gray)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedTextField(
+                                value = codigoInput,
+                                onValueChange = { codigoInput = it.uppercase() },
+                                label = { Text("Código (ej. RIV-A8F2)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = nombreEquipoCodigoInput,
+                                onValueChange = { nombreEquipoCodigoInput = it },
+                                label = { Text("Nombre de equipo (Opcional)") },
+                                placeholder = { Text("Si lo dejas en blanco, serás Agente Libre") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+                            if (mensajeErrorCodigo.isNotEmpty()) {
+                                Text(mensajeErrorCodigo, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            if (codigoInput.isNotBlank()) {
+                                viewModel.unirseConCodigo(codigoInput.trim(), nombreEquipoCodigoInput.trim()) { exito, mensaje ->
+                                    if (exito) {
+                                        mostrarDialogoCodigo = false
+                                        codigoInput = ""
+                                        nombreEquipoCodigoInput = ""
+                                        mensajeErrorCodigo = ""
+                                    } else {
+                                        mensajeErrorCodigo = mensaje
+                                    }
+                                }
+                            }
+                        }) { Text("Unirse") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { mostrarDialogoCodigo = false; mensajeErrorCodigo = "" }) { Text("Cancelar") }
+                    }
+                )
             }
         }
     }

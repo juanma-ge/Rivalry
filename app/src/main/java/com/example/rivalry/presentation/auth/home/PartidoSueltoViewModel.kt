@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.example.rivalry.domain.model.Partido
 
-
 class PartidoSueltoViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
@@ -35,7 +34,8 @@ class PartidoSueltoViewModel : ViewModel() {
     private fun escucharPartidosSueltos() {
         val miId = auth.currentUser?.uid ?: return
 
-        db.collection("partidos_sueltos")
+        // CORREGIDO: Ahora usamos exactamente el mismo nombre de colección que al crear
+        db.collection("partidosSueltos")
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
 

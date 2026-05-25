@@ -10,11 +10,11 @@ import com.example.rivalry.domain.model.Partido
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class LigaViewModel : ViewModel() {
 
@@ -67,8 +67,14 @@ class LigaViewModel : ViewModel() {
                     val liga = documento.toObject(Liga::class.java)
                     liga?.copy(id = documento.id)
                 }
-                _misLigas.value = todasLasLigas.filter { liga -> liga.idsMiembros.contains(userId) }
-                _ligasExplorar.value = todasLasLigas.filter { liga -> liga.esPublica && !liga.idsMiembros.contains(userId) }
+
+                _misLigas.value = todasLasLigas.filter { liga ->
+                    liga.idsMiembros.contains(userId) || liga.idsAgentesLibres.contains(userId)
+                }
+
+                _ligasExplorar.value = todasLasLigas.filter { liga ->
+                    (!liga.esPrivada || liga.esPublica) && !liga.idsMiembros.contains(userId) && !liga.idsAgentesLibres.contains(userId)
+                }
                 _cargando.value = false
             }
     }
@@ -78,8 +84,20 @@ class LigaViewModel : ViewModel() {
             _cargando.value = true
             val creadorId = FirebaseAuth.getInstance().currentUser?.uid
             if (creadorId != null) {
+                val codigoGenerado = if (!esPublica) "RIV-${UUID.randomUUID().toString().take(4).uppercase()}" else ""
+
                 val nuevaLiga = Liga(
-                    id = "", nombre = nombre, deporte = deporte.name, creadorId = creadorId, maxParticipantes = maxParticipantes, esPublica = esPublica, idsMiembros = listOf(creadorId), provincia = provincia, ciudad = ciudad
+                    id = "",
+                    nombre = nombre,
+                    deporte = deporte.name,
+                    creadorId = creadorId,
+                    maxParticipantes = maxParticipantes,
+                    esPublica = esPublica,
+                    esPrivada = !esPublica, // La marcamos como privada
+                    codigoInvitacion = codigoGenerado, // Guardamos el código
+                    idsMiembros = listOf(creadorId),
+                    provincia = provincia,
+                    ciudad = ciudad
                 )
 
                 FirebaseFirestore.getInstance().collection("ligas").add(nuevaLiga).addOnSuccessListener { documento ->
@@ -346,5 +364,47 @@ class LigaViewModel : ViewModel() {
         } catch (e: Exception) {
             println("Error en fichero local de liga: ${e.message}")
         }
+    }
+
+    fun unirseConCodigo(codigo: String, nombreEquipo: String, onResultado: (Boolean, String) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        db.collection("ligas").whereEqualTo("codigoInvitacion", codigo).get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.isEmpty) {
+                    onResultado(false, "No se ha encontrado ninguna liga con ese código.")
+                } else {
+                    val ligaDoc = snapshot.documents.first()
+                    val ligaId = ligaDoc.id
+                    val miembrosActuales = ligaDoc.get("idsMiembros") as? List<String> ?: emptyList()
+                    val agentesActuales = ligaDoc.get("idsAgentesLibres") as? List<String> ?: emptyList()
+
+                    if (miembrosActuales.contains(userId) || agentesActuales.contains(userId)) {
+                        onResultado(false, "Ya estás dentro de esta liga.")
+                    } else {
+                        if (nombreEquipo.isBlank()) {
+                            db.collection("ligas").document(ligaId).update("idsAgentesLibres", FieldValue.arrayUnion(userId))
+                                .addOnSuccessListener {
+                                    cargarLigas()
+                                    onResultado(true, "¡Te has unido a la liga como Agente Libre!")
+                                }
+                        } else {
+                            val updates = mapOf(
+                                "idsMiembros" to FieldValue.arrayUnion(userId),
+                                "nombresEquipos.$userId" to nombreEquipo
+                            )
+                            db.collection("ligas").document(ligaId).update(updates)
+                                .addOnSuccessListener {
+                                    cargarLigas()
+                                    onResultado(true, "¡Te has unido a la liga correctamente!")
+                                }
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                onResultado(false, "Error de conexión al buscar el código.")
+            }
     }
 }

@@ -175,6 +175,38 @@ fun PantallaDetalleLiga(
                 Text("${liga?.deporte} • ${liga?.ciudad}", color = Color.Gray)
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (liga?.esPrivada == true && (esAdmin || estoyApuntado)) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Código Privado: ${liga?.codigoInvitacion ?: "Sin código"}",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(
+                                onClick = {
+                                    val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(android.content.Intent.EXTRA_TEXT, "¡Únete a mi liga en Rivalry! Introduce este código secreto: ${liga?.codigoInvitacion}")
+                                    }
+                                    context.startActivity(android.content.Intent.createChooser(sendIntent, "Compartir código"))
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(Icons.Default.Share, contentDescription = "Compartir", tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
+                }
+
                 if (liga != null) {
                     val btnModifier = Modifier.width(200.dp)
                     if (estoyApuntado) {

@@ -11,7 +11,6 @@ import com.example.rivalry.domain.model.MiembroUI
 import java.io.File
 import java.io.FileOutputStream
 
-// Clase interna para no depender de otros archivos al calcular
 private data class EquipoPDF(
     val nombre: String,
     var puntos: Int = 0,
@@ -29,7 +28,6 @@ object GeneradorPDF {
 
     fun generarYCompartir(context: Context, nombreLiga: String, miembros: List<MiembroUI>, partidos: List<Partido>) {
 
-        // 1. CÁLCULO DE LA CLASIFICACIÓN
         val mapaEquipos = mutableMapOf<String, EquipoPDF>()
         miembros.forEach { mapaEquipos[it.nombreEquipo] = EquipoPDF(nombre = it.nombreEquipo) }
 
@@ -56,14 +54,12 @@ object GeneradorPDF {
                 .thenByDescending { it.golesFavor }
         )
 
-        // 2. CREACIÓN DEL DOCUMENTO PDF
         val pdfDocument = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
         val page = pdfDocument.startPage(pageInfo)
         val canvas: Canvas = page.canvas
         val paint = Paint()
 
-        // Título y Cabecera
         paint.textSize = 24f
         paint.isFakeBoldText = true
         canvas.drawText("Clasificación: $nombreLiga", 50f, 50f, paint)
@@ -72,7 +68,6 @@ object GeneradorPDF {
         paint.isFakeBoldText = false
         canvas.drawText("Rivalry App - Informe Oficial", 50f, 80f, paint)
 
-        // Encabezados tabla
         var y = 140f
         paint.isFakeBoldText = true
         canvas.drawText("POS", 50f, y, paint)
@@ -84,7 +79,6 @@ object GeneradorPDF {
         paint.strokeWidth = 1f
         canvas.drawLine(50f, y + 10f, 530f, y + 10f, paint)
 
-        // Filas de equipos
         y += 40f
         paint.isFakeBoldText = false
         tablaOrdenada.forEachIndexed { index, equipo ->
@@ -98,7 +92,6 @@ object GeneradorPDF {
 
         pdfDocument.finishPage(page)
 
-        // 3. GUARDAR Y ENVIAR
         try {
             val file = File(context.cacheDir, "Clasificacion_Rivalry.pdf")
             pdfDocument.writeTo(FileOutputStream(file))

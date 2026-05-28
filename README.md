@@ -3,6 +3,8 @@
 Rivalry es una aplicación nativa Android desarrollada con Kotlin y Jetpack Compose como proyecto final de 2º DAM.  
 La aplicación está orientada a la gestión de ligas deportivas amateur y a la interacción social entre jugadores, permitiendo organizar competiciones, partidos casuales y sistemas de comunicación en tiempo real.
 
+Pretende incentivar a las personas, especialmente jóvenes, a participar en ligas deportivas, especialmente de fútbol, brindando facilidades y una óptima gestión de ligas y partidos. Todo concentrado en una misma aplicación.
+
 La plataforma combina funcionalidades de red social, gestión competitiva y mensajería instantánea usando Firebase como infraestructura backend.
 
 ---

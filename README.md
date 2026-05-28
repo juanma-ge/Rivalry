@@ -13,12 +13,12 @@ La plataforma combina funcionalidades de red social, gestión competitiva y mens
 
 Para facilitar la revisión y evaluación del proyecto, la documentación se encuentra separada en distintos apartados:
 
-## [JUSTIFICACIÓN DE RAs](justificacion-ras.md)
+## [JUSTIFICACIÓN DE RAs](docs/justificacion-ras.md)
 Relación directa entre las funcionalidades desarrolladas en la app y los RAs exigidos en los módulos de 2º DAM (DI, PMDM, ADA, SGE, HLC).
 
 ---
 
-## [MANUAL DE USUARIO](manual-usuario.md)
+## [MANUAL DE USUARIO](docs/manual-usuario.md)
 Guía visual sobre cómo utilizar la aplicación, crear ligas, participar en pachangas, gestionar fichajes, utilizar el sistema social integrado, etc.
 Para facilitar al ususario su uso.
 
@@ -34,7 +34,7 @@ Explicación del modelo NoSQL en Firestore, colecciones utilizadas, sincronizaci
 
 ---
 
-## [FUNCIONALIDADES PRINCIPALES](funcionalidades.md)
+## [FUNCIONALIDADES PRINCIPALES](docs/funcionalidades.md)
 Descripción de las funcionalidades principales:
 - Gestión de ligas
 - Calendario Round Robin
@@ -46,12 +46,12 @@ Descripción de las funcionalidades principales:
 
 ---
 
-## [TESTING Y CONTROL DE CALIDAD](testing.md)
+## [TESTING Y CONTROL DE CALIDAD](docs/testing.md)
 Pruebas unitarias realizadas con JUnit, validaciones implementadas y estrategias de control de errores.
 
 ---
 
-## [INSTALACIÓN Y DESPLIEGUE](instalacion.md)
+## [INSTALACIÓN Y DESPLIEGUE](docs/instalacion.md)
 Pasos para ejecutar el proyecto en Android Studio, instalación mediante APK y configuración del entorno.
 
 ---

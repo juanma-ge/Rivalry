@@ -24,12 +24,12 @@ Para facilitar al ususario su uso.
 
 ---
 
-## [ARQUITECTURA Y DISEÑO](arquitectura.md)
+## [ARQUITECTURA Y DISEÑO](docs/arquitectura.md)
 Documentación técnica sobre la arquitectura MVVM, organización por capas, flujo de datos y estructura general del proyecto.
 
 ---
 
-## [BASE DE DATOS FIREBASE](firebase.md)
+## [BASE DE DATOS FIREBASE](docs/firebase.md)
 Explicación del modelo NoSQL en Firestore, colecciones utilizadas, sincronización en tiempo real y persistencia de datos.
 
 ---

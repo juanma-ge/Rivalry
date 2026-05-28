@@ -13,28 +13,28 @@ La plataforma combina funcionalidades de red social, gestión competitiva y mens
 
 Para facilitar la revisión y evaluación del proyecto, la documentación se encuentra separada en distintos apartados:
 
-## [JUSTIFICACIÓN DE RAs](docs/justificacion-ras.md)
+## [JUSTIFICACIÓN DE RAs](justificacion-ras.md)
 Relación directa entre las funcionalidades desarrolladas en la app y los RAs exigidos en los módulos de 2º DAM (DI, PMDM, ADA, SGE, HLC).
 
 ---
 
-## [MANUAL DE USUARIO](docs/manual-usuario.md)
+## [MANUAL DE USUARIO](manual-usuario.md)
 Guía visual sobre cómo utilizar la aplicación, crear ligas, participar en pachangas, gestionar fichajes, utilizar el sistema social integrado, etc.
 Para facilitar al ususario su uso.
 
 ---
 
-## [ARQUITECTURA Y DISEÑO](docs/arquitectura.md)
+## [ARQUITECTURA Y DISEÑO](arquitectura.md)
 Documentación técnica sobre la arquitectura MVVM, organización por capas, flujo de datos y estructura general del proyecto.
 
 ---
 
-## [BASE DE DATOS FIREBASE](docs/firebase.md)
+## [BASE DE DATOS FIREBASE](firebase.md)
 Explicación del modelo NoSQL en Firestore, colecciones utilizadas, sincronización en tiempo real y persistencia de datos.
 
 ---
 
-## [FUNCIONALIDADES PRINCIPALES](docs/funcionalidades.md)
+## [FUNCIONALIDADES PRINCIPALES](funcionalidades.md)
 Descripción de las funcionalidades principales:
 - Gestión de ligas
 - Calendario Round Robin
@@ -46,12 +46,12 @@ Descripción de las funcionalidades principales:
 
 ---
 
-## [TESTING Y CONTROL DE CALIDAD](docs/testing.md)
+## [TESTING Y CONTROL DE CALIDAD](testing.md)
 Pruebas unitarias realizadas con JUnit, validaciones implementadas y estrategias de control de errores.
 
 ---
 
-## [INSTALACIÓN Y DESPLIEGUE](docs/instalacion.md)
+## [INSTALACIÓN Y DESPLIEGUE](instalacion.md)
 Pasos para ejecutar el proyecto en Android Studio, instalación mediante APK y configuración del entorno.
 
 ---

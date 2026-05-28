@@ -61,7 +61,6 @@ Pasos para ejecutar el proyecto en Android Studio, instalación mediante APK y c
 - Jetpack Compose
 - Firebase Authentication
 - Firebase Firestore
-- Firebase Storage
 - Kotlin Coroutines & StateFlow
 - Material Design 3
 - MVVM Architecture

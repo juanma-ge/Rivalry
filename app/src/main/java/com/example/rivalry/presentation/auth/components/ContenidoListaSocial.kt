@@ -23,8 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.rivalry.domain.model.AmigoUI
-import com.example.rivalry.domain.model.SolicitudUI
+import com.example.rivalry.presentation.auth.model.AmigoUI
+import com.example.rivalry.presentation.auth.model.SolicitudUI
 import com.example.rivalry.presentation.auth.home.SocialViewModel
 
 @Composable

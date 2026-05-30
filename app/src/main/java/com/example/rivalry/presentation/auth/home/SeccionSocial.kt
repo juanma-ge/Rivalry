@@ -47,7 +47,6 @@ fun SeccionSocial(viewModel: SocialViewModel = androidx.lifecycle.viewmodel.comp
                     solicitudes = solicitudes,
                     amigosLista = amigosLista,
                     amigosFiltrados = amigosFiltrados,
-                    // AÑADIDO: Los 3 parámetros también en la vista Tablet
                     onAmigoClick = { idChat, nombre, foto ->
                         idChatActivoId = idChat
                         nombreChatActivo = nombre

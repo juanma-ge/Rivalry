@@ -5,8 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rivalry.domain.model.Deporte
 import com.example.rivalry.domain.model.Liga
-import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.presentation.auth.model.MiembroUI
 import com.example.rivalry.domain.model.Partido
+import com.example.rivalry.presentation.auth.model.AgenteLibreUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore

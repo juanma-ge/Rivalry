@@ -1,4 +1,4 @@
-package com.example.rivalry.presentation.auth.home
+package com.example.rivalry.presentation.auth.model
 
 data class UsuarioPerfil(
     val apodo: String = "",

@@ -1,4 +1,4 @@
-package com.example.rivalry.presentation.auth
+package com.example.rivalry.presentation.auth.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -16,13 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rivalry.presentation.auth.components.ItemLiga
-import com.example.rivalry.presentation.auth.home.LigaViewModel
-import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
-import com.example.rivalry.presentation.auth.home.PerfilViewModel
-import com.example.rivalry.presentation.auth.home.SocialViewModel
-import com.example.rivalry.presentation.auth.home.SeccionPartidos
-import com.example.rivalry.presentation.auth.home.SeccionPerfil
-import com.example.rivalry.presentation.auth.home.SeccionSocial
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,13 +41,12 @@ fun PantallaHome(
     val pagerState = rememberPagerState(pageCount = { titulosPestanias.size })
     val coroutineScope = rememberCoroutineScope()
 
-    var navSeleccionada by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(0) }
+    var navSeleccionada by rememberSaveable { mutableStateOf(0) }
     var busquedaLiga by remember { mutableStateOf("") }
     val partidosLiga by partidoViewModel.partidosLiga.collectAsState()
     val misPartidosSueltos by partidoViewModel.misPartidosSueltos.collectAsState()
     val partidosExplorar by partidoViewModel.partidosExplorar.collectAsState()
 
-    // --- VARIABLES PARA EL CÓDIGO DE LIGA PRIVADA ---
     var mostrarDialogoCodigo by remember { mutableStateOf(false) }
     var codigoInput by remember { mutableStateOf("") }
     var nombreEquipoCodigoInput by remember { mutableStateOf("") }
@@ -265,7 +259,7 @@ fun PantallaHome(
                             onNavegarADetalleLiga(idLiga)
                         },
                         onLogout = {
-                            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                            FirebaseAuth.getInstance().signOut()
                             onCerrarSesion()
                         }
                     )

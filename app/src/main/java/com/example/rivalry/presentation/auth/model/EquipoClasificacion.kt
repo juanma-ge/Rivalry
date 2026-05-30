@@ -1,4 +1,4 @@
-package com.example.rivalry.domain.model
+package com.example.rivalry.presentation.auth.model
 
 data class EquipoClasificacion(
     val nombre: String,

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Liga
-import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.presentation.auth.model.MiembroUI
 
 @Composable
 fun PestaniaEquipos(

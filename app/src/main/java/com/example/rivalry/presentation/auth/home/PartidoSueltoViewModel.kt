@@ -34,7 +34,6 @@ class PartidoSueltoViewModel : ViewModel() {
     private fun escucharPartidosSueltos() {
         val miId = auth.currentUser?.uid ?: return
 
-        // CORREGIDO: Ahora usamos exactamente el mismo nombre de colección que al crear
         db.collection("partidosSueltos")
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener

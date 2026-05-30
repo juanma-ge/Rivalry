@@ -5,7 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.rivalry.presentation.auth.AuthViewModel
-import com.example.rivalry.presentation.auth.PantallaHome
+import com.example.rivalry.presentation.auth.home.PantallaHome
 import com.example.rivalry.presentation.auth.PantallaLogin
 import com.example.rivalry.presentation.auth.PantallaPerfil
 import com.example.rivalry.presentation.auth.PantallaRegistro
@@ -13,7 +13,7 @@ import com.example.rivalry.presentation.auth.home.LigaViewModel
 import com.example.rivalry.presentation.auth.home.PantallaDetalleLiga
 import com.example.rivalry.presentation.auth.home.PartidoSueltoViewModel
 import com.example.rivalry.presentation.auth.home.TemaViewModel
-import com.example.rivalry.presentation.home.PantallaCrearLiga
+import com.example.rivalry.presentation.auth.home.PantallaCrearLiga
 import com.example.rivalry.presentation.home.PantallaCrearPartido
 import com.google.firebase.auth.FirebaseAuth
 

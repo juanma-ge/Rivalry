@@ -1,8 +1,8 @@
 package com.example.rivalry.presentation.auth.home
 
 import androidx.lifecycle.ViewModel
-import com.example.rivalry.domain.model.AmigoUI
-import com.example.rivalry.domain.model.SolicitudUI
+import com.example.rivalry.presentation.auth.model.AmigoUI
+import com.example.rivalry.presentation.auth.model.SolicitudUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,7 +24,7 @@ class SocialViewModel : ViewModel() {
 
     init {
         cargarSolicitudesPendientes()
-        escucharAmigosEnTiempoReal() // Escuchamos amigos desde el principio
+        escucharAmigosEnTiempoReal()
     }
 
     private fun escucharAmigosEnTiempoReal() {

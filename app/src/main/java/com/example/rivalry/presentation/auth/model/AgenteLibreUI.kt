@@ -1,6 +1,8 @@
-package com.example.rivalry.presentation.auth.home
+package com.example.rivalry.presentation.auth.model
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +20,7 @@ fun cargarAgentesLibres(ids: List<String>) {
     }
 
     FirebaseFirestore.getInstance().collection("usuarios")
-        .whereIn(com.google.firebase.firestore.FieldPath.documentId(), ids)
+        .whereIn(FieldPath.documentId(), ids)
         .get()
         .addOnSuccessListener { snapshot ->
             val lista = snapshot.documents.mapNotNull { doc ->
@@ -34,11 +36,11 @@ fun cargarAgentesLibres(ids: List<String>) {
 fun apuntarseComoAgenteLibre(ligaId: String) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
     FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
-        .update("idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayUnion(userId))
+        .update("idsAgentesLibres", FieldValue.arrayUnion(userId))
 }
 
 fun salirDeAgentesLibres(ligaId: String) {
     val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
     FirebaseFirestore.getInstance().collection("ligas").document(ligaId)
-        .update("idsAgentesLibres", com.google.firebase.firestore.FieldValue.arrayRemove(userId))
+        .update("idsAgentesLibres", FieldValue.arrayRemove(userId))
 }

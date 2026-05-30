@@ -6,7 +6,7 @@ import com.example.rivalry.domain.repository.PartidoRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class PartidorepositoryImpl(private val db: FirebaseFirestore): PartidoRepository {
+class PartidoRepositoryImpl(private val db: FirebaseFirestore): PartidoRepository {
 
     override suspend fun crearPartido(partido: Partido): Boolean {
         return try{

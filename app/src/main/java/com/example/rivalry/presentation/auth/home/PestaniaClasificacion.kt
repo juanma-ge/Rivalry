@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Partido
-import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.presentation.auth.model.MiembroUI
 
 data class EquipoClasificacion(
     val nombre: String,

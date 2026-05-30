@@ -2,6 +2,7 @@ package com.example.rivalry.presentation.auth.home
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import com.example.rivalry.presentation.auth.model.UsuarioPerfil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions

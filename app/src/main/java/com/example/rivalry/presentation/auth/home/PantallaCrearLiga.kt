@@ -1,4 +1,4 @@
-package com.example.rivalry.presentation.home
+package com.example.rivalry.presentation.auth.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -11,7 +11,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rivalry.domain.model.Deporte
-import com.example.rivalry.presentation.auth.home.LigaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

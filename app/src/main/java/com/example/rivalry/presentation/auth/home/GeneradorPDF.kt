@@ -7,7 +7,7 @@ import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import androidx.core.content.FileProvider
 import com.example.rivalry.domain.model.Partido
-import com.example.rivalry.domain.model.MiembroUI
+import com.example.rivalry.presentation.auth.model.MiembroUI
 import java.io.File
 import java.io.FileOutputStream
 

@@ -43,6 +43,7 @@ Descripción de las funcionalidades principales:
 - Pachangas
 - Sistema de amistades
 - Exportación PDF
+<img width="450" height="398" alt="image" src="https://github.com/user-attachments/assets/e5ff3d53-312e-40e2-8fe8-eed198d53a17" />
 
 ---
 

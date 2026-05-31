@@ -15,3 +15,5 @@ Su responsabilidad exclusiva es la comunicación con fuentes de información ext
 Gestiona la interfaz gráfica y la retención del estado visual del usuario.
 * **ViewModels:** Clases diseñadas para aguantar los cambios de configuración del dispositivo (como la rotación de pantalla). Utilizan el entorno de rutinas `viewModelScope.launch` para ejecutar operaciones de E/S de forma asíncrona, exponiendo los resultados a la vista mediante flujos de datos inmutables (`StateFlow`).
 * **UI (Jetpack Compose):** Funciones `@Composable` totalmente declarativas. La interfaz gráfica se conecta fluidamente con el código subyacente, reaccionando de manera automática a las emisiones del `StateFlow` y redibujando únicamente los componentes necesarios en la pantalla.
+
+<img width="720" height="410" alt="image" src="https://github.com/user-attachments/assets/9e93cc5e-e4fc-4a9e-8347-f4ae2bfd4703" />

@@ -94,8 +94,8 @@ class LigaViewModel : ViewModel() {
                     creadorId = creadorId,
                     maxParticipantes = maxParticipantes,
                     esPublica = esPublica,
-                    esPrivada = !esPublica, // La marcamos como privada
-                    codigoInvitacion = codigoGenerado, // Guardamos el código
+                    esPrivada = !esPublica,
+                    codigoInvitacion = codigoGenerado,
                     idsMiembros = listOf(creadorId),
                     provincia = provincia,
                     ciudad = ciudad

@@ -1,4 +1,4 @@
-# 📖 Manual de Usuario
+# Manual de Usuario
 
 Bienvenido a **Rivalry**. Este manual detalla las operativas básicas e intermedias para sacar el máximo provecho a la plataforma, la cual cuenta con una distribución intuitiva que facilita la navegación entre sus menús.
 
